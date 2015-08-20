@@ -1,18 +1,20 @@
+var routes = require('../../components/routes.js');
+
 module.exports = {
   show : function(req, res) {
-  		if(req.isSocket) {
-  			console.log("HE");
-  			Game.subscribe(req, req.params.id);
   			return Game.findOne(req.params.id, function(err, game) {
           		if(game === undefined) return res.notFound();
-          		res.json(game);
+                if(req.isSocket) {
+                    Game.subscribe(req, req.params.id);
+                 }else{
+                   renderTo(routes, res.view, '/game/'+req.param('id'), {},{game:game});
+                 }
       });
-  		} else {
-	    	return res.view({gameid:req.params.id});
-		}
+  		 
   },
   create : function(req,res,next)
   {
+    console.log("create");
   	Game.create({}, function(err, game) {
   		console.log(game);
         if (err) return next(err);

@@ -1,5 +1,5 @@
-define([], function () {
-  var validators= {
+
+  const validators= {
     slidable : function(sliding,move) {
           var slidable=false;
           for (var n=1; n<7; n++) {
@@ -18,5 +18,4 @@ define([], function () {
           return slidable;
      }
   }
-  return validators;
-});
+  export default validators;

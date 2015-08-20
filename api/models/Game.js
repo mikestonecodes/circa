@@ -15,11 +15,5 @@ module.exports = {
 	    collection: 'Move',
 	    via: 'game'
 	}
-  },
-  beforeUpdate: function (values, cb) {
-       sails.log(values);
-      //calling cb() with an argument returns an error. Useful for canceling the entire operation if some criteria fails.
-      cb();
-
   }
 };

@@ -1,0 +1,76 @@
+#timeline {
+  float: right;
+  margin: 0 auto;
+  width: 250px; }
+
+.whitedisplay {
+  float: right;
+  background: white; }
+
+.bigpiece {
+  display: block;
+  float: clear;
+  width: 50px;
+  height: 50px;
+  margin-bottom: 10px;
+  border-radius: 25px; }
+
+.score {
+  margin: 0 15px;
+  font-size: 30px;
+  margin-bottom: 15px; }
+
+.username {
+  padding-bottom: 20px;
+  height: 35px; }
+
+.move {
+  clear: both;
+  position: relative;
+  height: 35px;
+  padding-bottom: 15px; }
+
+.pass {
+  color: red; }
+
+.move:after {
+  display: block;
+  clear: both;
+  position: absolute;
+  content: " ";
+  width: 25px;
+  top: 5px;
+  height: 25px;
+  border: 1px solid white; }
+
+.leftmove:after {
+  right: 65px;
+  border-right: none;
+  float: left; }
+
+.rightmove:after {
+  left: 65px;
+  border-left: none;
+  float: right; }
+
+.blackcol {
+  width: 109px;
+  float: right;
+  padding-left: 15px;
+  border-left: 1px solid gray;
+  margin-left: -1px; }
+
+.whitecol {
+  text-align: right;
+  border-right: 1px solid gray;
+  width: 110px;
+  padding-right: 15px;
+  float: left; }
+
+.blackdisplay {
+  background: black; }
+
+body {
+  font-family: 'Raleway', sans-serif;
+  background: #24242d;
+  color: white; }

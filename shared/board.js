@@ -1,7 +1,10 @@
-define(['reflux','app/Actions'], function (Reflux,Actions) {
-	
-	var Board = Reflux.createStore({
-		listenables: [Actions],
+import Reflux from 'reflux';
+import actions from './Actions';
+import {Transport} from './Transport'
+import {List} from 'immutable'
+
+	const Board = Reflux.createStore({
+		listenables: [actions],
 		colors:{
 			EMPTY:0,
 			WHITE:1,
@@ -17,37 +20,32 @@ define(['reflux','app/Actions'], function (Reflux,Actions) {
 	    this.last_move_passed = false;
 	    this.in_atari = false;
 	    this.attempted_suicide = false;
-	    this.history= [];
+	    this.history=List();	
 	    this.gameid=-1;
     	this.onChanges = [];
+    	this.socket = new Transport();
     	this.moves = []; 
-    	this.listenTo(Actions.placeStone,this.play.bind(this));
-    	//subscribed via io.socket.get
-    	io.socket.on('game', this.update.bind(this) ); 
+    	this.listenTo(actions.placeStone,this.play.bind(this));
+    	this.socket.on('game', this.update.bind(this) ); 
+    	//subscribed via this.socket.get
+
 	},
 	retrieveMove:function(move)
 	{
 		var self=this;
-		io.socket.get('/game/'+this.gameid+"/moves?sort=createdAt%20DESC&limit=1", function (moves) {
+		this.socket.get('/game/'+this.gameid+"/moves?sort=createdAt%20DESC&limit=1", function (moves) {
     		//sets the board array based on move history
     		self.add(moves[0]);
     		
       });
 	},
 
-	retrieveHistory:function(gameid)
+	retrieveHistory:function(game)
 	{
-
-  		var self=this;
-  		if(gameid)this.gameid=gameid;
-  		console.log("here");
-  		//retrieves the entire state of the current game and subscribes to current game's socket room by default 
-  		io.socket.get('/game/'+this.gameid, function (game) {
-    		//sets the board array based on move history
-    		console.log(game.history);;
-    		self.set(game.history);
-    		
-      });
+				this.gameid=game.id;
+				this.socket.get('/game/'+this.gameid);
+   	 			
+  		 		this.set(game.history);
 	},
 
 	locationToNotation:function(location)
@@ -88,18 +86,17 @@ define(['reflux','app/Actions'], function (Reflux,Actions) {
 	//adds move to move history
 	add : function(move)
 	{
-		this.history.push(move);
-		this.set(this.history);
+		this.history=this.history.unshift(move);
+		this.set();
 	},
 	//populates the board array based on move history
 	set: function(history)
 	{
-
-		if(Array.isArray(history)){
-			moves=history;
-		}else{
-			var regex=/#([A-Z][0-9]+)([!|@])([A-Z][0-9]+)|([A-Z][0-9]+)([!|@])/g;
+		
+		if(typeof history === 'string' || history instanceof String){
 			var moves=[];
+			var regex=/#([A-Z][0-9]+)([!|@])([A-Z][0-9]+)|([A-Z][0-9]+)([!|@])/g;
+			var move=[];
 			while (move = regex.exec(history)) {
 				var move_data={};
 				if(!move[1]&&move[4]){
@@ -115,22 +112,23 @@ define(['reflux','app/Actions'], function (Reflux,Actions) {
 						from:move[3]
 					}
 				}
-				moves.push(move_data);
+				moves.unshift(move_data);
 			}
+			this.history=List(moves);	
 		}	
 		var self=this;
-		this.history=moves;	
-		this.history.forEach(function(item){
+		this.board=this.history.reverse().reduce(function(board,item){
 			var location=self.notationToLocation(item.place);
 			if(location.hour>0&&location.hour<13&&location.ring>0&&location.ring<7){
-				self.board[location.ring-1][location.hour-1]=parseInt(item.color);
+				board[location.ring-1][location.hour-1]=parseInt(item.color);
 	    	}
 	    	if(item.from){
 	    		var fromlocation=self.notationToLocation(item.from);
-	    		self.board[fromlocation.ring-1][fromlocation.hour-1]=0;
+	    		board[fromlocation.ring-1][fromlocation.hour-1]=0;
 	    	}
-    	});
-    	if(moves.length>0)this.updategameState(moves[moves.length-1]);
+	    	return board;
+    	},this.create_board());
+    	if(this.history.count()>0)this.updategameState(this.history.get(0));
     	this.triggerBoard();
 	},
 	//move the game along based off lastest move recieved from server
@@ -150,11 +148,10 @@ define(['reflux','app/Actions'], function (Reflux,Actions) {
 
 	update: function(snapshot)
 	{
-		console.log(snapshot);
-		Actions.retrieveMove();
+		actions.retrieveMove();
 	},
 	//this triggers a refresh and sends all the info needed for the 
-    //boardview and any other react elements listening via mixins.
+    //boardview and any other react elements listening.
 	triggerBoard: function()
 	{
 		this.trigger({
@@ -167,7 +164,6 @@ define(['reflux','app/Actions'], function (Reflux,Actions) {
 	},
 	//place or move stone 
 	play:  function(to) {
-
 		if(this.gameState == 'sliding' || this.gameState == 'slide' ){
 			if(this.board[to.ring-1][to.hour-1]==this.current_color ){
 				this.sliding=to;
@@ -186,9 +182,8 @@ define(['reflux','app/Actions'], function (Reflux,Actions) {
 			data['from']=this.locationToNotation(this.sliding);	
     	}
     	var self=this;
-    	io.socket.post("/move",data);
+    	this.socket.post("/move",data);
     	return true;
 	}
 	});
-	return Board;
-});
+	export default Board;

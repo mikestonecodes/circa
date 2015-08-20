@@ -1,9 +1,15 @@
-define(['react','reflux','app/boardGraphics','app/Board','app/Actions','app/Validators'], function (React,Reflux, boardGraphics,Board, Actions,Validators) {
-  'use strict';
-  var BoardIntersection = React.createClass({
+'use strict';
+
+import React from 'react';
+import Reflux from 'reflux';
+import actions from '../shared/Actions';
+import Validators from '../shared/Validators';
+
+
+  const BoardIntersection = React.createClass({
 
       handleClick: function() {
-        Actions.placeStone({ring:this.props.ring,hour:this.props.hour});
+        actions.placeStone({ring:this.props.ring,hour:this.props.hour});
       },
       
       render: function() {
@@ -39,5 +45,4 @@ define(['react','reflux','app/boardGraphics','app/Board','app/Actions','app/Vali
           );
       }
   });
-  return BoardIntersection;
-});
+  export default BoardIntersection;

@@ -12,6 +12,10 @@ body
     background: #24242d;
     color: white
 }
+.board
+{
+  float:left;
+}
 .black
 {
 	fill:black;

@@ -333,13 +333,11 @@ var MoveTimeline = _react2['default'].createClass({
     var turnoffset = (0, _immutable.Seq)([[2, 2], [2, 1], [1, 1], [1, 2]]).findIndex(function (e) {
       return e.toString() === [firstmovecolor, currentcolor].toString();
     }) + 1;
-    console.log(turnoffset);
     var paired = moves.toSeq().skip(turnoffset).filter(function (move) {
       return move.color == color;
     }).groupBy(function (n, i) {
       return Math.floor(i / 2);
     });
-    console.log(paired);
     if (moves.count() < 5) return;
     return paired.map(function (pairedmoves, index) {
       if (pairedmoves.count() == 2) {
@@ -358,12 +356,11 @@ var MoveTimeline = _react2['default'].createClass({
             'div',
             { className: 'tofrom' },
             pairedmoves.get(0).from,
-            '-',
-            pairedmoves.get(0).place
+            pairedmoves.get(0).place != 'pass' ? '-' + pairedmoves.get(0).place : ''
           )
         );
       }
-    });
+    }).toArray();
   },
   handleClick: function handleClick(event) {
     if (event.target.innerHTML == 'PASS') {
@@ -400,10 +397,12 @@ var MoveTimeline = _react2['default'].createClass({
       if (firstmove.from && moves.count() > 2) {
         place = "PASS";
       }
-    } else if (firstmove && moves.count() > 2) {
-      if (color == 2) place = "PASS";
+    } else if (firstmove && moves.count() > 2 && color == 2) {
+      place = "PASS";
     }
-
+    if (tofrom == 'pass-pass') {
+      tofrom = 'pass';
+    }
     return _react2['default'].createElement(
       'div',
       { className: 'move ' + (color == 1 ? "left" : "right") + 'move' },
@@ -698,7 +697,6 @@ var Board = _reflux2['default'].createStore({
 		if (this.gameState == 'sliding' || this.gameState == 'slide') {
 			data['from'] = 'pass';
 		}
-		console.log(data);
 		this.socket.post("/move", data);
 	},
 
@@ -713,7 +711,6 @@ var Board = _reflux2['default'].createStore({
 	},
 	//populates the board array based on move history
 	set: function set(history) {
-		console.log(history);
 		if (typeof history === 'string' || history instanceof String) {
 			var moves = [];
 			var regex = /#([A-Z][0-9]+|pass)([!|@])([A-Z][0-9]+|pass)|([A-Z][0-9]+|pass)([!|@])/g;
@@ -754,7 +751,6 @@ var Board = _reflux2['default'].createStore({
 	},
 	//move the game along based off lastest move recieved from server
 	updategameState: function updategameState(lastmove) {
-		console.log(lastmove);
 		if (lastmove.from) {
 			this.gameState = 'place';
 			this.current_color = lastmove.color == this.colors.BLACK ? this.colors.WHITE : this.colors.BLACK;

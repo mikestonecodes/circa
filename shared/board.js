@@ -77,7 +77,6 @@ import {List} from 'immutable'
 	    if(this.gameState=='sliding'||this.gameState=='slide') {
 			data['from']='pass';	
     	}
-    	console.log(data);
     	this.socket.post("/move",data);
 
 	},
@@ -95,7 +94,6 @@ import {List} from 'immutable'
 	//populates the board array based on move history
 	set: function(history)
 	{
-			console.log(history);
 		if(typeof history === 'string' || history instanceof String){
 			var moves=[];
 			var regex=/#([A-Z][0-9]+|pass)([!|@])([A-Z][0-9]+|pass)|([A-Z][0-9]+|pass)([!|@])/g;
@@ -138,7 +136,6 @@ import {List} from 'immutable'
 	//move the game along based off lastest move recieved from server
 	updategameState: function(lastmove)
 	{
-		console.log(lastmove);
 		if(lastmove.from)
 		{
 			this.gameState='place';

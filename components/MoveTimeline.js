@@ -13,10 +13,8 @@ import actions from '../shared/Actions';
 
             var firstmovecolor=moves.get(0).color;
             var currentcolor=this.props.board.current_color;
-            var turnoffset=Seq([[2,2],[2,1],[1,1],[1,2]]).findIndex( e=> e.toString()===[firstmovecolor,currentcolor].toString())+1;
-            console.log(turnoffset);
+            var turnoffset=Seq([[2,2],[2,1],[1,1],[1,2]]).findIndex( e=> e.toString()===[firstmovecolor,currentcolor].toString())+1;    
             var paired=moves.toSeq().skip(turnoffset).filter(move => move.color==color).groupBy( (n,i) => Math.floor(i/2));
-             console.log(paired);
             if(moves.count()<5)return;
             return paired.map(function(pairedmoves,index){
                 if(pairedmoves.count()==2){
@@ -24,11 +22,11 @@ import actions from '../shared/Actions';
                 return (
                     <div className={'move ' + (pairedmoves.get(0).color==1?"left":"right")+'move'} key={'move'+pairedmoves.get(0).color+index}>
                         <div className='place '  > {pairedmoves.get(1).place} </div>
-                        <div className='tofrom' >{pairedmoves.get(0).from}-{pairedmoves.get(0).place}</div> 
+                        <div className='tofrom' >{pairedmoves.get(0).from}{pairedmoves.get(0).place!='pass'?'-'+pairedmoves.get(0).place:''}</div> 
                     </div>
                 ); 
               }
-         });
+         }).toArray();
       },
       handleClick: function(event)
       {
@@ -74,11 +72,14 @@ import actions from '../shared/Actions';
 
                 }
               
-            }else if(firstmove&&moves.count()>2){
-              if(color==2)place="PASS"
+            }else if(firstmove&&moves.count()>2&&color==2){
+              place="PASS"
             }
-
-            return ( 
+            if(tofrom=='pass-pass')
+            {
+              tofrom='pass';
+            }
+            return (  
               <div className={'move ' + (color==1?"left":"right")+'move'}>
                 <div className={'curent' + (color==1?"white":"black")+'place place '+ (place=='PASS'?'pass':'')} onClick={this.handleClick}> {place}</div>
                 <div className={'curent' + (color==1?"white":"black")+'tofrom tofrom '+ (tofrom=='PASS'?'pass':'')} onClick={this.handleClick}> {tofrom} </div>   

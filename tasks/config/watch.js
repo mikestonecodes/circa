@@ -9,7 +9,7 @@ module.exports = function(grunt) {
 		assets: {
 
 			// Assets to watch:
-			files: ['assets/**/*', 'tasks/pipeline.js', '!**/node_modules/**'],
+			files: ['assets/**/*', 'tasks/pipeline.js', '!**/node_modules/**','!assets/js/bundle.js'],
 
 			// When assets are changed:
 			tasks: ['syncAssets' , 'linkAssets']

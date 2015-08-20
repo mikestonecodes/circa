@@ -72,10 +72,13 @@ import {List} from 'immutable'
 
 	
 	pass :function() {
-	    if (this.last_move_passed) {
-	        this.end_game();
-	    }
-	    this.last_move_passed = true;
+		var data= {game:this.gameid,place:'pass',color:this.current_color,gameState:this.gameState} ;
+
+	    if(this.gameState=='sliding'||this.gameState=='slide') {
+			data['from']='pass';	
+    	}
+    	console.log(data);
+    	this.socket.post("/move",data);
 
 	},
 
@@ -92,10 +95,10 @@ import {List} from 'immutable'
 	//populates the board array based on move history
 	set: function(history)
 	{
-		
+			console.log(history);
 		if(typeof history === 'string' || history instanceof String){
 			var moves=[];
-			var regex=/#([A-Z][0-9]+)([!|@])([A-Z][0-9]+)|([A-Z][0-9]+)([!|@])/g;
+			var regex=/#([A-Z][0-9]+|pass)([!|@])([A-Z][0-9]+|pass)|([A-Z][0-9]+|pass)([!|@])/g;
 			var move=[];
 			while (move = regex.exec(history)) {
 				var move_data={};
@@ -118,6 +121,7 @@ import {List} from 'immutable'
 		}	
 		var self=this;
 		this.board=this.history.reverse().reduce(function(board,item){
+			if(item.place=='pass')return board;
 			var location=self.notationToLocation(item.place);
 			if(location.hour>0&&location.hour<13&&location.ring>0&&location.ring<7){
 				board[location.ring-1][location.hour-1]=parseInt(item.color);
@@ -134,6 +138,7 @@ import {List} from 'immutable'
 	//move the game along based off lastest move recieved from server
 	updategameState: function(lastmove)
 	{
+		console.log(lastmove);
 		if(lastmove.from)
 		{
 			this.gameState='place';

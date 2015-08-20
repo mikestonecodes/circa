@@ -302,7 +302,7 @@ module.exports = exports['default'];
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
-    value: true
+  value: true
 });
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -317,129 +317,169 @@ var _reflux2 = _interopRequireDefault(_reflux);
 
 var _immutable = require('immutable');
 
+var _sharedActions = require('../shared/Actions');
+
+var _sharedActions2 = _interopRequireDefault(_sharedActions);
+
 var MoveTimeline = _react2['default'].createClass({
-    displayName: 'MoveTimeline',
+  displayName: 'MoveTimeline',
 
-    filterMoves: function filterMoves(color) {
-        if (!this.props.board.history || this.props.board.history.count() < 1) return '';
-        var moves = this.props.board.history;
+  filterMoves: function filterMoves(color) {
+    if (!this.props.board.history || this.props.board.history.count() < 1) return '';
+    var moves = this.props.board.history;
 
-        var firstmovecolor = moves.get(0).color;
-        var currentcolor = this.props.board.current_color;
-        var turnoffset = (0, _immutable.Seq)([[2, 2], [2, 1], [1, 1], [1, 2]]).findIndex(function (e) {
-            return e.toString() === [firstmovecolor, currentcolor].toString();
-        }) + 1;
-        console.log(turnoffset);
-        var paired = moves.toSeq().skip(turnoffset).filter(function (move) {
-            return move.color == color;
-        }).groupBy(function (n, i) {
-            return Math.floor(i / 2);
-        });
-        if (moves.count() < 5) return;
-        return paired.map(function (pairedmoves, index) {
-            if (pairedmoves.count() == 2) {
+    var firstmovecolor = moves.get(0).color;
+    var currentcolor = this.props.board.current_color;
+    var turnoffset = (0, _immutable.Seq)([[2, 2], [2, 1], [1, 1], [1, 2]]).findIndex(function (e) {
+      return e.toString() === [firstmovecolor, currentcolor].toString();
+    }) + 1;
+    console.log(turnoffset);
+    var paired = moves.toSeq().skip(turnoffset).filter(function (move) {
+      return move.color == color;
+    }).groupBy(function (n, i) {
+      return Math.floor(i / 2);
+    });
+    console.log(paired);
+    if (moves.count() < 5) return;
+    return paired.map(function (pairedmoves, index) {
+      if (pairedmoves.count() == 2) {
 
-                return _react2['default'].createElement(
-                    'div',
-                    { className: 'move ' + (pairedmoves.get(0).color == 1 ? "left" : "right") + 'move', key: 'move' + pairedmoves.get(0).color + index },
-                    _react2['default'].createElement(
-                        'div',
-                        { className: 'place ' },
-                        ' ',
-                        pairedmoves.get(1).place,
-                        ' '
-                    ),
-                    _react2['default'].createElement(
-                        'div',
-                        { className: 'tofrom' },
-                        pairedmoves.get(0).from,
-                        '-',
-                        pairedmoves.get(0).place
-                    )
-                );
-            }
-        });
-    },
-    renderCurrentMove: function renderCurrentMove(color) {
-        if (!this.props.board.history || this.props.board.history.count() < 1) return '';
-        var place = '';
-        var tofrom = '';
         return _react2['default'].createElement(
+          'div',
+          { className: 'move ' + (pairedmoves.get(0).color == 1 ? "left" : "right") + 'move', key: 'move' + pairedmoves.get(0).color + index },
+          _react2['default'].createElement(
             'div',
-            { className: 'move ' + (color == 1 ? "left" : "right") + 'move' },
-            _react2['default'].createElement(
-                'div',
-                { className: 'curent' + (color == 1 ? "white" : "black") + 'place place' },
-                ' ',
-                place
-            ),
-            _react2['default'].createElement(
-                'div',
-                { className: 'curent' + (color == 1 ? "white" : "black") + 'tofrom tofrom' },
-                ' ',
-                tofrom,
-                ' '
-            )
-        );
-    },
-    render: function render() {
-        return _react2['default'].createElement(
+            { className: 'place ' },
+            ' ',
+            pairedmoves.get(1).place,
+            ' '
+          ),
+          _react2['default'].createElement(
             'div',
-            { id: 'timeline' },
-            _react2['default'].createElement(
-                'div',
-                { className: 'whitecol' },
-                _react2['default'].createElement(
-                    'div',
-                    { className: 'whitescore score' },
-                    '0'
-                ),
-                _react2['default'].createElement(
-                    'div',
-                    { className: 'username' },
-                    'user 1'
-                ),
-                this.renderCurrentMove(1),
-                _react2['default'].createElement('div', { className: 'bigpiece whitedisplay' }),
-                _react2['default'].createElement(
-                    'div',
-                    { className: 'previousmovesleft' },
-                    ' ',
-                    this.filterMoves(1)
-                )
-            ),
-            _react2['default'].createElement(
-                'div',
-                { className: 'blackcol' },
-                _react2['default'].createElement(
-                    'div',
-                    { className: 'blackscore score' },
-                    '0'
-                ),
-                _react2['default'].createElement(
-                    'div',
-                    { className: 'username' },
-                    'user 2'
-                ),
-                this.renderCurrentMove(2),
-                _react2['default'].createElement(
-                    'div',
-                    { className: 'bigpiece blackdisplay' },
-                    ' '
-                ),
-                _react2['default'].createElement(
-                    'div',
-                    { className: 'previousmovesright' },
-                    this.filterMoves(2)
-                )
-            )
+            { className: 'tofrom' },
+            pairedmoves.get(0).from,
+            '-',
+            pairedmoves.get(0).place
+          )
         );
+      }
+    });
+  },
+  handleClick: function handleClick(event) {
+    if (event.target.innerHTML == 'PASS') {
+      _sharedActions2['default'].pass();
     }
+  },
+  renderCurrentMove: function renderCurrentMove(color) {
+
+    var moves = this.props.board.history;
+
+    var place = '';
+    var tofrom = '';
+    var firstmove = moves ? moves.get(0) : undefined;
+    if (firstmove && color == firstmove.color) {
+
+      if (firstmove.from) {
+        tofrom = firstmove.from + "-" + firstmove.place;
+        place = moves.get(1).place;
+        if (firstmove.color == 1) {
+          place = tofrom = '';
+        }
+      } else {
+        place = firstmove.place;
+        tofrom = "PASS";
+      }
+    } else if (firstmove && color != firstmove.color) {
+
+      if (color == 2 && !firstmove.from) {
+        place = moves.get(2).place;
+        if (moves.get(3)) {
+          tofrom = moves.get(3).from + "-" + moves.get(3).place;
+        }
+      }
+      if (firstmove.from && moves.count() > 2) {
+        place = "PASS";
+      }
+    } else if (firstmove && moves.count() > 2) {
+      if (color == 2) place = "PASS";
+    }
+
+    return _react2['default'].createElement(
+      'div',
+      { className: 'move ' + (color == 1 ? "left" : "right") + 'move' },
+      _react2['default'].createElement(
+        'div',
+        { className: 'curent' + (color == 1 ? "white" : "black") + 'place place ' + (place == 'PASS' ? 'pass' : ''), onClick: this.handleClick },
+        ' ',
+        place
+      ),
+      _react2['default'].createElement(
+        'div',
+        { className: 'curent' + (color == 1 ? "white" : "black") + 'tofrom tofrom ' + (tofrom == 'PASS' ? 'pass' : ''), onClick: this.handleClick },
+        ' ',
+        tofrom,
+        ' '
+      )
+    );
+  },
+  render: function render() {
+    return _react2['default'].createElement(
+      'div',
+      { id: 'timeline' },
+      _react2['default'].createElement(
+        'div',
+        { className: 'whitecol' },
+        _react2['default'].createElement(
+          'div',
+          { className: 'whitescore score' },
+          '0'
+        ),
+        _react2['default'].createElement(
+          'div',
+          { className: 'username' },
+          'user 1'
+        ),
+        this.renderCurrentMove(1),
+        _react2['default'].createElement('div', { className: 'bigpiece whitedisplay' }),
+        _react2['default'].createElement(
+          'div',
+          { className: 'previousmovesleft' },
+          ' ',
+          this.filterMoves(1)
+        )
+      ),
+      _react2['default'].createElement(
+        'div',
+        { className: 'blackcol' },
+        _react2['default'].createElement(
+          'div',
+          { className: 'blackscore score' },
+          '0'
+        ),
+        _react2['default'].createElement(
+          'div',
+          { className: 'username' },
+          'user 2'
+        ),
+        this.renderCurrentMove(2),
+        _react2['default'].createElement(
+          'div',
+          { className: 'bigpiece blackdisplay' },
+          ' '
+        ),
+        _react2['default'].createElement(
+          'div',
+          { className: 'previousmovesright' },
+          this.filterMoves(2)
+        )
+      )
+    );
+  }
 });
 exports['default'] = MoveTimeline;
 module.exports = exports['default'];
 
-},{"immutable":"immutable","react":"react","reflux":"reflux"}],6:[function(require,module,exports){
+},{"../shared/Actions":8,"immutable":"immutable","react":"react","reflux":"reflux"}],6:[function(require,module,exports){
 'use strict';
 
 var React = require('react'),
@@ -480,7 +520,7 @@ var _reflux = require('reflux');
 
 var _reflux2 = _interopRequireDefault(_reflux);
 
-var Actions = _reflux2['default'].createActions(['retrieveHistory', 'placeStone', 'retrieveMove']);
+var Actions = _reflux2['default'].createActions(['retrieveHistory', 'placeStone', 'retrieveMove', 'pass']);
 exports['default'] = Actions;
 module.exports = exports['default'];
 
@@ -653,10 +693,13 @@ var Board = _reflux2['default'].createStore({
 	},
 
 	pass: function pass() {
-		if (this.last_move_passed) {
-			this.end_game();
+		var data = { game: this.gameid, place: 'pass', color: this.current_color, gameState: this.gameState };
+
+		if (this.gameState == 'sliding' || this.gameState == 'slide') {
+			data['from'] = 'pass';
 		}
-		this.last_move_passed = true;
+		console.log(data);
+		this.socket.post("/move", data);
 	},
 
 	end_game: function end_game() {
@@ -670,10 +713,10 @@ var Board = _reflux2['default'].createStore({
 	},
 	//populates the board array based on move history
 	set: function set(history) {
-
+		console.log(history);
 		if (typeof history === 'string' || history instanceof String) {
 			var moves = [];
-			var regex = /#([A-Z][0-9]+)([!|@])([A-Z][0-9]+)|([A-Z][0-9]+)([!|@])/g;
+			var regex = /#([A-Z][0-9]+|pass)([!|@])([A-Z][0-9]+|pass)|([A-Z][0-9]+|pass)([!|@])/g;
 			var move = [];
 			while (move = regex.exec(history)) {
 				var move_data = {};
@@ -695,6 +738,7 @@ var Board = _reflux2['default'].createStore({
 		}
 		var self = this;
 		this.board = this.history.reverse().reduce(function (board, item) {
+			if (item.place == 'pass') return board;
 			var location = self.notationToLocation(item.place);
 			if (location.hour > 0 && location.hour < 13 && location.ring > 0 && location.ring < 7) {
 				board[location.ring - 1][location.hour - 1] = parseInt(item.color);
@@ -710,6 +754,7 @@ var Board = _reflux2['default'].createStore({
 	},
 	//move the game along based off lastest move recieved from server
 	updategameState: function updategameState(lastmove) {
+		console.log(lastmove);
 		if (lastmove.from) {
 			this.gameState = 'place';
 			this.current_color = lastmove.color == this.colors.BLACK ? this.colors.WHITE : this.colors.BLACK;

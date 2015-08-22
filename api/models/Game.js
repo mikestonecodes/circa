@@ -14,6 +14,12 @@ module.exports = {
 	moves:{
 	    collection: 'Move',
 	    via: 'game'
-	}
+	},
+
+  captures:{
+     type:'string',
+       defaultsTo : ''
+  }
+
   }
 };

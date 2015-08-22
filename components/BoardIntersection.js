@@ -31,8 +31,12 @@ import Validators from '../shared/Validators';
             }
           
           }    
+       
           if(this.props.board.sliding&&this.props.board.sliding.ring==this.props.ring && this.props.board.sliding.hour==this.props.hour)r=( 200/8 ); 
-          var ringRadius = 200 * Math.sin(2*Math.PI*this.props.ring/24)/2; 
+          var ringRadius = 200 * Math.sin(2*Math.PI*this.props.ring/24)/2;
+           if(this.props.color== 4) classes += "white";
+           if(this.props.color== 3) classes += "black";
+            if(this.props.color== 4||this.props.color== 3)var r= ( 200/24 );
           return (
               <circle 
                   cx={ 200 + 2*ringRadius*Math.cos(2*Math.PI*(((this.props.hour+8)%12)+this.props.ring/2)/12) }

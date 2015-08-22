@@ -90,7 +90,7 @@ import actions from '../shared/Actions';
           return (
               <div id='timeline'>
             <div className='whitecol'> 
-                <div className='whitescore score'>0</div>
+                <div className='whitescore score'>{this.props.board.whitescore}</div>
                 <div className='username'>user 1</div>
                 {this.renderCurrentMove(1)}
                 <div className='bigpiece whitedisplay'></div>
@@ -99,7 +99,7 @@ import actions from '../shared/Actions';
             </div>
             <div className='blackcol'> 
 
-                    <div className='blackscore score'>0</div>
+                    <div className='blackscore score'>{this.props.board.blackscore}</div>
                     <div className='username'>user 2</div>
                     {this.renderCurrentMove(2)}
               <div className='bigpiece blackdisplay'> </div>

@@ -3,7 +3,7 @@
 import React from 'react';
 import Reflux from 'reflux';
 import {Seq,List} from 'immutable';
-import actions from '../shared/Actions';
+import BoardActions from '../shared/BoardActions';
      
     const MoveTimeline = React.createClass({
         filterMoves:function(color)
@@ -31,12 +31,12 @@ import actions from '../shared/Actions';
       handleClick: function(event)
       {
         if(event.target.innerHTML=='PASS'){
-          actions.pass();
+          BoardActions.pass();
         }
       },
       renderCurrentMove: function(color)
       {
-          
+           
             var moves=this.props.board.history;
          
             var place='';
@@ -86,12 +86,17 @@ import actions from '../shared/Actions';
               </div>
             );
       },
+      join : function(color){
+
+      },
       render: function() {
+        var white_user='';
+        var black_user='';
           return (
               <div id='timeline'>
             <div className='whitecol'> 
                 <div className='whitescore score'>{this.props.board.whitescore}</div>
-                <div className='username'>user 1</div>
+                <div className='username'> {white_user}   </div>
                 {this.renderCurrentMove(1)}
                 <div className='bigpiece whitedisplay'></div>
                 <div className='previousmovesleft'> {this.filterMoves(1)}</div>
@@ -100,7 +105,7 @@ import actions from '../shared/Actions';
             <div className='blackcol'> 
 
                     <div className='blackscore score'>{this.props.board.blackscore}</div>
-                    <div className='username'>user 2</div>
+                    <div className='username'>{black_user} </div>
                     {this.renderCurrentMove(2)}
               <div className='bigpiece blackdisplay'> </div>
                <div className='previousmovesright'>{this.filterMoves(2)}</div>

@@ -1,10 +1,10 @@
 import Reflux from 'reflux';
-import actions from './Actions';
+import BoardActions from './BoardActions';
 import {Transport} from './Transport'
 import {List} from 'immutable'
 
 	const Board = Reflux.createStore({
-		listenables: [actions],
+		listenables: [BoardActions],
 		colors:{
 			EMPTY:0,
 			WHITE:1,
@@ -28,7 +28,7 @@ import {List} from 'immutable'
     	this.onChanges = [];
     	this.socket = new Transport();
     	this.moves = []; 
-    	this.listenTo(actions.placeStone,this.play.bind(this));
+    	this.listenTo(BoardActions.placeStone,this.play.bind(this));
     	this.socket.on('game', this.update.bind(this) ); 
     	//subscribed via this.socket.get
 
@@ -177,7 +177,8 @@ import {List} from 'immutable'
 
 	update: function(snapshot)
 	{
-		actions.retrieveMove();
+        if(snapshot.verb=='addedTo'&&snapshot.attribute=='moves')
+		BoardActions.retrieveMove();
 	},
 	//this triggers a refresh and sends all the info needed for the 
     //boardview and any other react elements listening.
@@ -260,9 +261,11 @@ import {List} from 'immutable'
             if(move.ring==1&&n==-1&&hof2!=-1&&hof2!=1)hoffset+=3;      
             if(move.hour+hoffset==-1)hoffset+=12;
             if(hoffset==-1)hoffset=11; 
-            return  {ring:mn,hour:(((move.hour-1+hoffset))%12)+1};
+            var ring=mn;
+            var hour=(((move.hour-1+hoffset))%12)+1
+            return  {ring:ring,hour:hour,color:this.board[ring-1][hour-1]};
         },
-	getAdjacent: function(move){
+        getAdjacent: function(move){
         var movesAvaibletoSlide=[];
         var movesAvaibletoSlide=[
             this.calcoffset(move,1),     
@@ -273,7 +276,8 @@ import {List} from 'immutable'
         if(move.ring==6) delete movesAvaibletoSlide[2];
         if(move.ring==6) delete movesAvaibletoSlide[1];
         return movesAvaibletoSlide;            
-	},
+    },
+
 	getEmptyGroup : function (target, group) {
     if (group === undefined) {
         var group = [[],[],[]];
@@ -398,8 +402,9 @@ killGroup : function(enemyGroup) {
            });
 },
 emanateKill : function(piece) {
-      
+                piece.color=parseInt(piece.color);
             if(piece=='pass')return;
+            piece.color=parseInt(piece.color);
  	var self=this;
     var killedgroup=[];
      this.getAdjacent(piece).forEach(function(location){ 
@@ -407,8 +412,9 @@ emanateKill : function(piece) {
            touching.color=self.board[location.ring-1][location.hour-1];
            touching.ring=location.ring;
            touching.hour=location.hour;
-       
+      
         if (touching.color !== piece.color) {
+       
             var enemyGroup = self.getGroup(touching);
             var atari = self.countLiberties(enemyGroup);
          
@@ -419,11 +425,12 @@ emanateKill : function(piece) {
             }
         }   
       });
-     console.log(killedgroup,'ug');
+ 
     return killedgroup;
   },
 
 getAdjacentLiberties : function(piece) { // takes a piece
+
     var buddies = this.getAdjacent(piece);
     var emptyTargets = Array();
          var self=this;
@@ -461,20 +468,23 @@ countLiberties : function(group) {
 
 
  getGroup : function (piece, group, color) {
-
+    
     if (group === undefined) {
         var group = Array();
     } // create our container if we're at the top of the descent path
     if (color === undefined) {
         var color = piece.color;
     }
+ 
     if (color === piece.color) {
         group.push(piece); // add the piece in question.
         var buddies = this.getAdjacent(piece); // get all friends
+       
         for (var i=0; i<buddies.length;i++) {
             var notInGroup = true;
             for (var j=0; j<group.length;j++) {
-                if (buddies[i] === group[j]) {
+         
+                if ( JSON.stringify(buddies[i]) === JSON.stringify(group[j]) ) {
                     notInGroup = false;
                 }
             }

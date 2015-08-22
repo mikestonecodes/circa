@@ -2,14 +2,14 @@
 
 import React from 'react';
 import Reflux from 'reflux';
-import actions from '../shared/Actions';
+import BoardActions from '../shared/BoardActions';
 import Validators from '../shared/Validators';
 
 
   const BoardIntersection = React.createClass({
 
       handleClick: function() {
-        actions.placeStone({ring:this.props.ring,hour:this.props.hour});
+        BoardActions.placeStone({ring:this.props.ring,hour:this.props.hour});
       },
       
       render: function() {

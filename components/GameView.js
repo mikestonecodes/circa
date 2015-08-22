@@ -1,7 +1,7 @@
 import Reflux from 'reflux';
 import React from 'react';
 import boardStore from '../shared/board';
-import Actions from '../shared/Actions';
+import BoardActions from '../shared/BoardActions';
 import BoardView from './BoardView';
 import MoveTimeline from './MoveTimeline';
     const gameView = React.createClass({
@@ -9,7 +9,7 @@ import MoveTimeline from './MoveTimeline';
         getInitialState: function(){return {boardstore:{}};},
         componentWillMount: function () {
        // When this component is loaded, fetch initial data
-       Actions.retrieveHistory(this.props.game);
+       BoardActions.retrieveHistory(this.props.game);
     },
       render: function() {
           return (

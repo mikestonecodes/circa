@@ -128,9 +128,9 @@ var _reflux = require('reflux');
 
 var _reflux2 = _interopRequireDefault(_reflux);
 
-var _sharedActions = require('../shared/Actions');
+var _sharedBoardActions = require('../shared/BoardActions');
 
-var _sharedActions2 = _interopRequireDefault(_sharedActions);
+var _sharedBoardActions2 = _interopRequireDefault(_sharedBoardActions);
 
 var _sharedValidators = require('../shared/Validators');
 
@@ -140,7 +140,7 @@ var BoardIntersection = _react2['default'].createClass({
     displayName: 'BoardIntersection',
 
     handleClick: function handleClick() {
-        _sharedActions2['default'].placeStone({ ring: this.props.ring, hour: this.props.hour });
+        _sharedBoardActions2['default'].placeStone({ ring: this.props.ring, hour: this.props.hour });
     },
 
     render: function render() {
@@ -174,7 +174,7 @@ var BoardIntersection = _react2['default'].createClass({
 exports['default'] = BoardIntersection;
 module.exports = exports['default'];
 
-},{"../shared/Actions":8,"../shared/Validators":10,"react":"react","reflux":"reflux"}],3:[function(require,module,exports){
+},{"../shared/BoardActions":8,"../shared/Validators":10,"react":"react","reflux":"reflux"}],3:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, '__esModule', {
   value: true
@@ -218,7 +218,7 @@ var BoardView = _react2['default'].createClass({
 
       return _react2['default'].createElement(
         'svg',
-        { height: '800', version: '1.1', width: '800', xmlns: 'http://www.w3.org/2000/svg', className: 'board' },
+        { height: '400', version: '1.1', width: '400', xmlns: 'http://www.w3.org/2000/svg', className: 'board' },
         _react2['default'].createElement(
           'g',
           null,
@@ -233,7 +233,7 @@ var BoardView = _react2['default'].createClass({
     } else {
       return _react2['default'].createElement(
         'svg',
-        { height: '800', version: '1.1', width: '800', xmlns: 'http://www.w3.org/2000/svg', className: 'board' },
+        { height: '400', version: '1.1', width: '400', xmlns: 'http://www.w3.org/2000/svg', className: 'board' },
         _react2['default'].createElement(
           'g',
           null,
@@ -267,9 +267,9 @@ var _sharedBoard = require('../shared/board');
 
 var _sharedBoard2 = _interopRequireDefault(_sharedBoard);
 
-var _sharedActions = require('../shared/Actions');
+var _sharedBoardActions = require('../shared/BoardActions');
 
-var _sharedActions2 = _interopRequireDefault(_sharedActions);
+var _sharedBoardActions2 = _interopRequireDefault(_sharedBoardActions);
 
 var _BoardView = require('./BoardView');
 
@@ -288,7 +288,7 @@ var gameView = _react2['default'].createClass({
     },
     componentWillMount: function componentWillMount() {
         // When this component is loaded, fetch initial data
-        _sharedActions2['default'].retrieveHistory(this.props.game);
+        _sharedBoardActions2['default'].retrieveHistory(this.props.game);
     },
     render: function render() {
         return _react2['default'].createElement(
@@ -302,7 +302,7 @@ var gameView = _react2['default'].createClass({
 exports['default'] = gameView;
 module.exports = exports['default'];
 
-},{"../shared/Actions":8,"../shared/board":11,"./BoardView":3,"./MoveTimeline":5,"react":"react","reflux":"reflux"}],5:[function(require,module,exports){
+},{"../shared/BoardActions":8,"../shared/board":11,"./BoardView":3,"./MoveTimeline":5,"react":"react","reflux":"reflux"}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -321,9 +321,9 @@ var _reflux2 = _interopRequireDefault(_reflux);
 
 var _immutable = require('immutable');
 
-var _sharedActions = require('../shared/Actions');
+var _sharedBoardActions = require('../shared/BoardActions');
 
-var _sharedActions2 = _interopRequireDefault(_sharedActions);
+var _sharedBoardActions2 = _interopRequireDefault(_sharedBoardActions);
 
 var MoveTimeline = _react2['default'].createClass({
   displayName: 'MoveTimeline',
@@ -368,7 +368,7 @@ var MoveTimeline = _react2['default'].createClass({
   },
   handleClick: function handleClick(event) {
     if (event.target.innerHTML == 'PASS') {
-      _sharedActions2['default'].pass();
+      _sharedBoardActions2['default'].pass();
     }
   },
   renderCurrentMove: function renderCurrentMove(color) {
@@ -425,7 +425,10 @@ var MoveTimeline = _react2['default'].createClass({
       )
     );
   },
+  join: function join(color) {},
   render: function render() {
+    var white_user = '';
+    var black_user = '';
     return _react2['default'].createElement(
       'div',
       { id: 'timeline' },
@@ -440,7 +443,9 @@ var MoveTimeline = _react2['default'].createClass({
         _react2['default'].createElement(
           'div',
           { className: 'username' },
-          'user 1'
+          ' ',
+          white_user,
+          '   '
         ),
         this.renderCurrentMove(1),
         _react2['default'].createElement('div', { className: 'bigpiece whitedisplay' }),
@@ -462,7 +467,8 @@ var MoveTimeline = _react2['default'].createClass({
         _react2['default'].createElement(
           'div',
           { className: 'username' },
-          'user 2'
+          black_user,
+          ' '
         ),
         this.renderCurrentMove(2),
         _react2['default'].createElement(
@@ -482,7 +488,7 @@ var MoveTimeline = _react2['default'].createClass({
 exports['default'] = MoveTimeline;
 module.exports = exports['default'];
 
-},{"../shared/Actions":8,"immutable":"immutable","react":"react","reflux":"reflux"}],6:[function(require,module,exports){
+},{"../shared/BoardActions":8,"immutable":"immutable","react":"react","reflux":"reflux"}],6:[function(require,module,exports){
 'use strict';
 
 var React = require('react'),
@@ -523,8 +529,8 @@ var _reflux = require('reflux');
 
 var _reflux2 = _interopRequireDefault(_reflux);
 
-var Actions = _reflux2['default'].createActions(['retrieveHistory', 'placeStone', 'retrieveMove', 'pass']);
-exports['default'] = Actions;
+var BoardActions = _reflux2['default'].createActions(['retrieveHistory', 'placeStone', 'retrieveMove', 'pass']);
+exports['default'] = BoardActions;
 module.exports = exports['default'];
 
 },{"reflux":"reflux"}],9:[function(require,module,exports){
@@ -626,16 +632,16 @@ var _reflux = require('reflux');
 
 var _reflux2 = _interopRequireDefault(_reflux);
 
-var _Actions = require('./Actions');
+var _BoardActions = require('./BoardActions');
 
-var _Actions2 = _interopRequireDefault(_Actions);
+var _BoardActions2 = _interopRequireDefault(_BoardActions);
 
 var _Transport = require('./Transport');
 
 var _immutable = require('immutable');
 
 var Board = _reflux2['default'].createStore({
-    listenables: [_Actions2['default']],
+    listenables: [_BoardActions2['default']],
     colors: {
         EMPTY: 0,
         WHITE: 1,
@@ -659,7 +665,7 @@ var Board = _reflux2['default'].createStore({
         this.onChanges = [];
         this.socket = new _Transport.Transport();
         this.moves = [];
-        this.listenTo(_Actions2['default'].placeStone, this.play.bind(this));
+        this.listenTo(_BoardActions2['default'].placeStone, this.play.bind(this));
         this.socket.on('game', this.update.bind(this));
         //subscribed via this.socket.get
     },
@@ -788,7 +794,7 @@ var Board = _reflux2['default'].createStore({
     },
 
     update: function update(snapshot) {
-        _Actions2['default'].retrieveMove();
+        if (snapshot.verb == 'addedTo' && snapshot.attribute == 'moves') _BoardActions2['default'].retrieveMove();
     },
     //this triggers a refresh and sends all the info needed for the
     //boardview and any other react elements listening.
@@ -860,7 +866,9 @@ var Board = _reflux2['default'].createStore({
         if (move.ring == 1 && n == -1 && hof2 != -1 && hof2 != 1) hoffset += 3;
         if (move.hour + hoffset == -1) hoffset += 12;
         if (hoffset == -1) hoffset = 11;
-        return { ring: mn, hour: (move.hour - 1 + hoffset) % 12 + 1 };
+        var ring = mn;
+        var hour = (move.hour - 1 + hoffset) % 12 + 1;
+        return { ring: ring, hour: hour, color: this.board[ring - 1][hour - 1] };
     },
     getAdjacent: function getAdjacent(move) {
         var movesAvaibletoSlide = [];
@@ -869,6 +877,7 @@ var Board = _reflux2['default'].createStore({
         if (move.ring == 6) delete movesAvaibletoSlide[1];
         return movesAvaibletoSlide;
     },
+
     getEmptyGroup: function getEmptyGroup(target, group) {
         if (group === undefined) {
             var group = [[], [], []];
@@ -984,8 +993,9 @@ var Board = _reflux2['default'].createStore({
         });
     },
     emanateKill: function emanateKill(piece) {
-
+        piece.color = parseInt(piece.color);
         if (piece == 'pass') return;
+        piece.color = parseInt(piece.color);
         var self = this;
         var killedgroup = [];
         this.getAdjacent(piece).forEach(function (location) {
@@ -995,6 +1005,7 @@ var Board = _reflux2['default'].createStore({
             touching.hour = location.hour;
 
             if (touching.color !== piece.color) {
+
                 var enemyGroup = self.getGroup(touching);
                 var atari = self.countLiberties(enemyGroup);
 
@@ -1005,12 +1016,13 @@ var Board = _reflux2['default'].createStore({
                 }
             }
         });
-        console.log(killedgroup, 'ug');
+
         return killedgroup;
     },
 
     getAdjacentLiberties: function getAdjacentLiberties(piece) {
         // takes a piece
+
         var buddies = this.getAdjacent(piece);
         var emptyTargets = Array();
         var self = this;
@@ -1054,13 +1066,16 @@ var Board = _reflux2['default'].createStore({
         if (color === undefined) {
             var color = piece.color;
         }
+
         if (color === piece.color) {
             group.push(piece); // add the piece in question.
             var buddies = this.getAdjacent(piece); // get all friends
+
             for (var i = 0; i < buddies.length; i++) {
                 var notInGroup = true;
                 for (var j = 0; j < group.length; j++) {
-                    if (buddies[i] === group[j]) {
+
+                    if (JSON.stringify(buddies[i]) === JSON.stringify(group[j])) {
                         notInGroup = false;
                     }
                 }
@@ -1077,4 +1092,4 @@ var Board = _reflux2['default'].createStore({
 exports['default'] = Board;
 module.exports = exports['default'];
 
-},{"./Actions":8,"./Transport":9,"immutable":"immutable","reflux":"reflux"}]},{},[6]);
+},{"./BoardActions":8,"./Transport":9,"immutable":"immutable","reflux":"reflux"}]},{},[6]);

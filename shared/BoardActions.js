@@ -1,9 +1,9 @@
 import Reflux from 'reflux';   
-var Actions = Reflux.createActions([
+var BoardActions = Reflux.createActions([
   'retrieveHistory',
   'placeStone',
   'retrieveMove',
   'pass'
 
 ]);
-export default Actions;
+export default BoardActions;

@@ -23,9 +23,9 @@ import BoardIntersection from './BoardIntersection';
                   > </BoardIntersection>
                 ) ); 
         
-        return  <svg height="800" version="1.1" width="800" xmlns="http://www.w3.org/2000/svg" className='board'><g>{BoardGraphics}</g><g>{intersections}</g></svg> ;
+        return  <svg height="400" version="1.1" width="400" xmlns="http://www.w3.org/2000/svg" className='board'><g>{BoardGraphics}</g><g>{intersections}</g></svg> ;
       }else{
-        return <svg height="800" version="1.1" width="800" xmlns="http://www.w3.org/2000/svg"  className='board'><g>{BoardGraphics}</g></svg>
+        return <svg height="400" version="1.1" width="400" xmlns="http://www.w3.org/2000/svg"  className='board'><g>{BoardGraphics}</g></svg>
       }
     }
 });

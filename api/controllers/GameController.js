@@ -12,6 +12,10 @@ module.exports = {
       });
   		 
   },
+  join : function (req,res)
+  {
+
+  },
   capture : function(req, res) {
         return Game.findOne(req.params.id, function(err, game) {
               if(game === undefined) return res.notFound();

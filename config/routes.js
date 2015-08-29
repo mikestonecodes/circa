@@ -39,7 +39,8 @@ module.exports.routes = {
 'get /auth/:provider/:action': 'AuthController.callback',
 'get /game/create': 'GameController.create',
 'get /game/:id': 'GameController.show',
-'update /game/capture/:color/:places': 'GameController.capture',
+'get /user/:username': 'UserController.show',
+'post /game/:id/join/:color': 'GameController.join',
   '/': {
     view: 'homepage'
   },

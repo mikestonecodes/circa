@@ -4,7 +4,6 @@ import React from 'react';
 import Reflux from 'reflux';
 import {Seq,List} from 'immutable';
 import BoardActions from '../shared/BoardActions';
-     
     const MoveTimeline = React.createClass({
         filterMoves:function(color)
         {
@@ -43,7 +42,6 @@ import BoardActions from '../shared/BoardActions';
             var tofrom='';
             var firstmove=moves?moves.get(0):undefined;
             if(firstmove&&color==firstmove.color){
-               
                if(firstmove.from)
                 {
                   tofrom=firstmove.from+"-"+firstmove.place;
@@ -51,28 +49,31 @@ import BoardActions from '../shared/BoardActions';
                    if(firstmove.color==1){
                    place=tofrom='';
                 }
-               }else {
+               }else if(this.props.board.gameState!='notyourturn'){
+                console.log(this.props.board.gameState);
                 place=firstmove.place;
                 tofrom="PASS";
               }
 
             }
+
             else if(firstmove&&color!=firstmove.color) {
              
-                if(color==2&&!firstmove.from)
+               if(color==2&&!firstmove.from)
                 {
                   place=moves.get(2).place;  
-                  if(moves.get(3)){
-                    tofrom=moves.get(3).from+"-"+moves.get(3).place;
+                  if(moves.get(1)){
+                    tofrom=moves.get(1).from+"-"+moves.get(1).place;
                   }
                 }
-                 if(firstmove.from&&moves.count()>2)
+                console.log(this.props.board.gameState);
+                 if(firstmove.from&&moves.count()>2 && this.props.board.gameState!='notyourturn')
                 {
                    place="PASS";
 
                 }
               
-            }else if(firstmove&&moves.count()>2&&color==2){
+            }else if(firstmove&&moves.count()>2&&color==2&& this.props.board.gameState!='notyourturn'){
               place="PASS"
             }
             if(tofrom=='pass-pass')
@@ -86,12 +87,22 @@ import BoardActions from '../shared/BoardActions';
               </div>
             );
       },
-      join : function(color){
-
+      joinWhiteGame : function(color){
+        BoardActions.joinGame('white');
+      },
+      joinBlackGame : function(color){
+        BoardActions.joinGame('black');
       },
       render: function() {
-        var white_user='';
-        var black_user='';
+        var white_user=(<div onClick={this.joinWhiteGame}>Join</div>);
+        var black_user=(<div onClick={this.joinBlackGame}>Join</div>);
+        if(this.props.board.whiteUser&&this.props.board.whiteUser.username)
+        {
+           white_user=this.props.board.whiteUser.username;
+        } 
+        if(this.props.board.blackUser&&this.props.board.blackUser.username){
+          black_user=this.props.board.blackUser.username;
+        }
           return (
               <div id='timeline'>
             <div className='whitecol'> 

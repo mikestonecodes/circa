@@ -3,7 +3,8 @@ var BoardActions = Reflux.createActions([
   'retrieveHistory',
   'placeStone',
   'retrieveMove',
-  'pass'
+  'pass',
+  'joinGame'
 
 ]);
 export default BoardActions;

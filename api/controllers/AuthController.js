@@ -5,6 +5,8 @@
  * should look. It currently includes the minimum amount of functionality for
  * the basics of Passport.js to work.
  */
+ var routes = require('../../components/routes.js');
+
 var AuthController = {
   /**
    * Render the login page
@@ -47,10 +49,8 @@ var AuthController = {
     });
 
     // Render the `auth/login.ext` view
-    res.view({
-      providers : providers
-    , errors    : req.flash('error')
-    });
+    renderTo(routes, res.view, '/login', {},{providers : providers, errors    : req.flash('error')});
+
   },
 
   /**
@@ -92,9 +92,7 @@ var AuthController = {
    * @param {Object} res
    */
   register: function (req, res) {
-    res.view({
-      errors: req.flash('error')
-    });
+    renderTo(routes, res.view, '/register', {},{  errors: req.flash('error')});
   },
 
   /**
@@ -170,7 +168,7 @@ var AuthController = {
         
         // Upon successful login, send the user to the homepage were req.user
         // will be available.
-        res.redirect('/');
+        res.redirect('/user/'+user.username);
       });
     });
   },

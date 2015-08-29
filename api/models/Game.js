@@ -1,10 +1,12 @@
 module.exports = {
   attributes: {
   	white:{
-    	model:'user'
+    	model:'user',
+         defaultsTo : {}
     } ,
   	black:{
-    	model:'user'
+    	model:'user',
+         defaultsTo : {}
     }, 
     history: {
       type:'string',

@@ -21,7 +21,7 @@ import Validators from '../shared/Validators';
           }else {
             classes += (this.props.board.current_color== 1 ?"white" : "black")+" empty";
         
-            if(this.props.board.gameState=='sliding'|| 
+            if(this.props.board.gameState=='sliding'|| this.props.board.gameState=='notyourturn' ||
                 ( this.props.board.sliding&&
                   !Validators.slidable(
                     this.props.board.sliding,
@@ -32,7 +32,7 @@ import Validators from '../shared/Validators';
           
           }    
        
-          if(this.props.board.sliding&&this.props.board.sliding.ring==this.props.ring && this.props.board.sliding.hour==this.props.hour)r=( 200/8 ); 
+          if(this.props.board.gameState!='notyourturn' &&this.props.board.sliding&&this.props.board.sliding.ring==this.props.ring && this.props.board.sliding.hour==this.props.hour)r=( 200/8 ); 
           var ringRadius = 200 * Math.sin(2*Math.PI*this.props.ring/24)/2;
            if(this.props.color== 4) classes += "white";
            if(this.props.color== 3) classes += "black";

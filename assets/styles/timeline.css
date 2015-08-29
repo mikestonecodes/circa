@@ -1,7 +1,9 @@
 #timeline {
-  float: right;
-  margin: 0 auto;
-  width: 250px; }
+    float: right;
+    width: 250px;
+    margin-right: 10%;
+    margin-top: 4%;
+}
 
 .whitedisplay {
   float: right;

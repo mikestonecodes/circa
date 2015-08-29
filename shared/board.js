@@ -21,18 +21,31 @@ import {List} from 'immutable'
 	    this.blackscore=0;
 	    this.sliding= undefined;
 	    this.last_move_passed = false;
-	    this.in_atari = false;
+	    this.in_atari = false; 
+        this.currentUser={};
 	    this.attempted_suicide = false;
 	    this.history=List();	
 	    this.gameid=-1;
     	this.onChanges = [];
+        this.whiteSocket='';
+        this.blackSocket='';
     	this.socket = new Transport();
     	this.moves = []; 
     	this.listenTo(BoardActions.placeStone,this.play.bind(this));
     	this.socket.on('game', this.update.bind(this) ); 
+
     	//subscribed via this.socket.get
 
 	},
+    joinGame: function(color)
+    {
+     
+       var self=this;
+       console.log("her");
+        this.socket.post('/game/'+this.gameid+"/join/"+color, function (game) {
+       
+      }); 
+    },
 	retrieveMove:function(move)
 	{
 		var self=this;
@@ -43,9 +56,17 @@ import {List} from 'immutable'
       });
 	},
 
-	retrieveHistory:function(game)
+	retrieveHistory:function(game,user)
 	{
 				this.gameid=game.id;
+                  this.currentUser=user;
+                if(game.white){
+
+                    this.whiteUser=game.white;
+                }
+                if(game.black){
+                    this.blackUser=game.black;
+                }
 				this.socket.get('/game/'+this.gameid);
    	 			
   		 		this.set(game.history);
@@ -75,6 +96,7 @@ import {List} from 'immutable'
 
 	
 	pass :function() {
+        if(this.gameState=='notyourturn')return;
 		var data= {game:this.gameid,place:'pass',color:this.current_color,gameState:this.gameState} ;
 
 	    if(this.gameState=='sliding'||this.gameState=='slide') {
@@ -92,12 +114,36 @@ import {List} from 'immutable'
 	add : function(move)
 	{
 		this.history=this.history.unshift(move);
-		this.set();
+        if(move.place!='pass'){
+        var moveLocation=this.notationToLocation(move.place);
+        this.board[moveLocation.ring-1][moveLocation.hour-1]=move.color;
+        if(move.from){
+            var fromLocation=this.notationToLocation(move.from);
+            this.board[fromLocation.ring-1][fromLocation.hour-1]=0;
+        }
+     
+        moveLocation.color=move.color;
+         var kills=this.emanateKill(moveLocation);
+            var self=this;
+                kills.forEach(function(kill){
+                   self.board[kill.ring-1][kill.hour-1]=0;
+                   if(move.color==2)self.blackscore++
+                   else self.whitescore++;
+                });
+                   }
+        this.updategameState(move);
+         
+
+         this.triggerBoard();
+		
 	},
 	//populates the board array based on move history
 	set: function(history)
 	{
-		if(typeof history === 'string' || history instanceof String){
+        var fullhistory=typeof history === 'string' || history instanceof String;
+		if(fullhistory){
+            this.whitescore=0;
+            this.blackscore=0;
 			var moves=[];
 			var regex=/#([A-Z][0-9]+|pass)([!|@])([A-Z][0-9]+|pass)|([A-Z][0-9]+|pass)([!|@])/g;
 			var move=[];
@@ -119,10 +165,10 @@ import {List} from 'immutable'
 				moves.unshift(move_data);
 			}
 			this.history=List(moves);	
-		}	
+	
 		var self=this;
-        this.whitescore=0;
-        this.blackscore=0;
+
+       
 		this.board=this.history.reverse().reduce(function(board,item){
 			if(item.place=='pass')return board;
             var location=self.notationToLocation(item.place);
@@ -137,48 +183,69 @@ import {List} from 'immutable'
 
             self.board=board;
 
-            location.color=item.color;
-            var kills=self.emanateKill(location);
+     
+                location.color=item.color;
+                var kills=self.emanateKill(location);
 
-            kills.forEach(function(kill){
-               board[kill.ring-1][kill.hour-1]=0;
-               if(item.color==2)self.blackscore++
-               else self.whitescore++;
-            });
-            
+                kills.forEach(function(kill){
+                   board[kill.ring-1][kill.hour-1]=0;
+                   if(item.color==2)self.blackscore++
+                   else self.whitescore++;
+                });
+         
 	    	return board;
     	},this.create_board());
-        
+            }   
 
-      
-    	if(this.history.count()>0){
-
-
+         if(this.history.count()>0){
             var lastmove=this.history.get(0);
-            this.updategameState(lastmove);
-            /**/
+           
         }
+         this.updategameState(lastmove);
          this.triggerBoard();
 	},
 	//move the game along based off lastest move recieved from server
 	updategameState: function(lastmove)
 	{
-		if(lastmove.from)
-		{
-			this.gameState='place';
-			this.current_color = 
-	        lastmove.color == this.colors.BLACK ? this.colors.WHITE : this.colors.BLACK;
-	        this.sliding=undefined;
-		}else 
-		{
-			this.gameState='sliding';
-		}
+      
+        var nextcolor=lastmove.color;
+          if(lastmove&&lastmove.from)nextcolor = lastmove.color==1 ? 2 : 1;
+          console.log(nextcolor);
+           if( this.currentUser&& ((nextcolor==1&&this.whiteUser.id==this.currentUser.id ) ||
+           (nextcolor==2&&this.blackUser.id==this.currentUser.id )
+            ))
+        {
+            if(lastmove){
+        		if(lastmove.from)
+        		{
+        			this.gameState='place';
+        			this.current_color = 
+        	        lastmove.color == this.colors.BLACK ? this.colors.WHITE : this.colors.BLACK;
+        	        this.sliding=undefined;
+        		}else if(this.gameState!='slide')
+        		{
+        			this.gameState='sliding';
+        		}
+            }else{
+               this.gameState='place';
+            }
+        }else{
+            this.gameState='notyourturn';
+               this.sliding=undefined;
+        }
 	},
 
 	update: function(snapshot)
 	{
+        console.log(snapshot);
         if(snapshot.verb=='addedTo'&&snapshot.attribute=='moves')
 		BoardActions.retrieveMove();
+        if(snapshot.verb=='updated'&&snapshot.data.action=='userJoined'){
+             this[ snapshot.data.color+'User']=snapshot.data.joinedUser;
+            this.updategameState();
+          this.triggerBoard();      
+        }
+
 	},
 	//this triggers a refresh and sends all the info needed for the 
     //boardview and any other react elements listening.
@@ -191,15 +258,25 @@ import {List} from 'immutable'
 			  current_color:this.current_color,
 			  gameState:this.gameState,
               whitescore:this.whitescore,
-              blackscore:this.blackscore
+              blackscore:this.blackscore,
+              blackUser:this.blackUser,
+              whiteUser:this.whiteUser
     		});
 	},
 	//place or move stone 
 	play:  function(to) {
 		if(this.gameState == 'sliding' || this.gameState == 'slide' ){
+
 			if(this.board[to.ring-1][to.hour-1]==this.current_color ){
-				this.sliding=to;
+				this.sliding=to;   
 				this.gameState = 'slide';
+
+                if(this.history.count()>0){
+            var lastmove=this.history.get(0);
+           
+        }
+         this.updategameState(lastmove);
+
 				this.triggerBoard();
 				return true;
 			}
@@ -225,7 +302,8 @@ import {List} from 'immutable'
                return false;  
             }
       
-    	
+  
+       
     	this.socket.post("/move",data);
 
 
@@ -253,28 +331,28 @@ import {List} from 'immutable'
             {
                 mn=1;
                 hoffset+=4;
-            }else  if(mn>5)
+            }else  if(mn>6)
             {
-                mn=5;
+                mn=6;
                 hoffset+=12;
             }
             if(move.ring==1&&n==-1&&hof2!=-1&&hof2!=1)hoffset+=3;      
             if(move.hour+hoffset==-1)hoffset+=12;
             if(hoffset==-1)hoffset=11; 
             var ring=mn;
-            var hour=(((move.hour-1+hoffset))%12)+1
+            var hour=(((move.hour-1+hoffset))%12)+1;
             return  {ring:ring,hour:hour,color:this.board[ring-1][hour-1]};
         },
         getAdjacent: function(move){
         var movesAvaibletoSlide=[];
+
         var movesAvaibletoSlide=[
             this.calcoffset(move,1),     
             this.calcoffset(move,-1),
             this.calcoffset(move,1,-1),   
             this.calcoffset(move,-1,1)
         ];
-        if(move.ring==6) delete movesAvaibletoSlide[2];
-        if(move.ring==6) delete movesAvaibletoSlide[1];
+        if(move.ring==6)movesAvaibletoSlide.splice(1,2);
         return movesAvaibletoSlide;            
     },
 
@@ -421,7 +499,7 @@ emanateKill : function(piece) {
             if (atari===0) {
                
                 killedgroup=killedgroup.concat(enemyGroup);
-                console.log(killedgroup);
+          
             }
         }   
       });
@@ -479,7 +557,7 @@ countLiberties : function(group) {
     if (color === piece.color) {
         group.push(piece); // add the piece in question.
         var buddies = this.getAdjacent(piece); // get all friends
-       
+
         for (var i=0; i<buddies.length;i++) {
             var notInGroup = true;
             for (var j=0; j<group.length;j++) {

@@ -152,12 +152,12 @@ var BoardIntersection = _react2['default'].createClass({
         } else {
             classes += (this.props.board.current_color == 1 ? "white" : "black") + " empty";
 
-            if (this.props.board.gameState == 'sliding' || this.props.board.sliding && !_sharedValidators2['default'].slidable(this.props.board.sliding, { ring: this.props.ring, hour: this.props.hour })) {
+            if (this.props.board.gameState == 'sliding' || this.props.board.gameState == 'notyourturn' || this.props.board.sliding && !_sharedValidators2['default'].slidable(this.props.board.sliding, { ring: this.props.ring, hour: this.props.hour })) {
                 r = 0;
             }
         }
 
-        if (this.props.board.sliding && this.props.board.sliding.ring == this.props.ring && this.props.board.sliding.hour == this.props.hour) r = 200 / 8;
+        if (this.props.board.gameState != 'notyourturn' && this.props.board.sliding && this.props.board.sliding.ring == this.props.ring && this.props.board.sliding.hour == this.props.hour) r = 200 / 8;
         var ringRadius = 200 * Math.sin(2 * Math.PI * this.props.ring / 24) / 2;
         if (this.props.color == 4) classes += "white";
         if (this.props.color == 3) classes += "black";
@@ -174,7 +174,7 @@ var BoardIntersection = _react2['default'].createClass({
 exports['default'] = BoardIntersection;
 module.exports = exports['default'];
 
-},{"../shared/BoardActions":8,"../shared/Validators":10,"react":"react","reflux":"reflux"}],3:[function(require,module,exports){
+},{"../shared/BoardActions":12,"../shared/Validators":14,"react":"react","reflux":"reflux"}],3:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, '__esModule', {
   value: true
@@ -218,7 +218,7 @@ var BoardView = _react2['default'].createClass({
 
       return _react2['default'].createElement(
         'svg',
-        { height: '400', version: '1.1', width: '400', xmlns: 'http://www.w3.org/2000/svg', className: 'board' },
+        { version: '1.1', width: '50%', xmlns: 'http://www.w3.org/2000/svg', className: 'board', viewBox: '0 0 400 400' },
         _react2['default'].createElement(
           'g',
           null,
@@ -233,7 +233,7 @@ var BoardView = _react2['default'].createClass({
     } else {
       return _react2['default'].createElement(
         'svg',
-        { height: '400', version: '1.1', width: '400', xmlns: 'http://www.w3.org/2000/svg', className: 'board' },
+        { version: '1.1', width: '50%', xmlns: 'http://www.w3.org/2000/svg', className: 'board', viewBox: '0 0 400 400' },
         _react2['default'].createElement(
           'g',
           null,
@@ -275,6 +275,10 @@ var _BoardView = require('./BoardView');
 
 var _BoardView2 = _interopRequireDefault(_BoardView);
 
+var _Layout = require('./Layout');
+
+var _Layout2 = _interopRequireDefault(_Layout);
+
 var _MoveTimeline = require('./MoveTimeline');
 
 var _MoveTimeline2 = _interopRequireDefault(_MoveTimeline);
@@ -288,12 +292,12 @@ var gameView = _react2['default'].createClass({
     },
     componentWillMount: function componentWillMount() {
         // When this component is loaded, fetch initial data
-        _sharedBoardActions2['default'].retrieveHistory(this.props.game);
+        _sharedBoardActions2['default'].retrieveHistory(this.props.game, this.props.user);
     },
     render: function render() {
         return _react2['default'].createElement(
-            'div',
-            null,
+            _Layout2['default'],
+            { user: this.props.user },
             _react2['default'].createElement(_BoardView2['default'], { board: this.state.boardstore }),
             _react2['default'].createElement(_MoveTimeline2['default'], { board: this.state.boardstore })
         );
@@ -302,7 +306,129 @@ var gameView = _react2['default'].createClass({
 exports['default'] = gameView;
 module.exports = exports['default'];
 
-},{"../shared/BoardActions":8,"../shared/board":11,"./BoardView":3,"./MoveTimeline":5,"react":"react","reflux":"reflux"}],5:[function(require,module,exports){
+},{"../shared/BoardActions":12,"../shared/board":15,"./BoardView":3,"./Layout":5,"./MoveTimeline":7,"react":"react","reflux":"reflux"}],5:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactRouter = require('react-router');
+
+var Layout = (function () {
+  function Layout() {
+    _classCallCheck(this, Layout);
+  }
+
+  _createClass(Layout, [{
+    key: 'render',
+    value: function render() {
+
+      var login_item = _react2['default'].createElement(
+        'div',
+        null,
+        ' ',
+        _react2['default'].createElement(
+          _reactRouter.Link,
+          { to: 'login' },
+          'Login'
+        ),
+        ' ',
+        _react2['default'].createElement(
+          _reactRouter.Link,
+          { to: 'register' },
+          'Register'
+        ),
+        ' '
+      );
+      if (this.props.user && this.props.user.username) login_item = "Hello " + this.props.user.username;
+      return _react2['default'].createElement(
+        'div',
+        null,
+        _react2['default'].createElement(
+          'nav',
+          null,
+          _react2['default'].createElement(
+            'div',
+            { id: 'title' },
+            'Circa '
+          ),
+          _react2['default'].createElement(
+            'div',
+            { id: 'login' },
+            ' ',
+            login_item,
+            '        '
+          )
+        ),
+        this.props.children
+      );
+    }
+  }]);
+
+  return Layout;
+})();
+
+exports['default'] = Layout;
+module.exports = exports['default'];
+
+},{"react":"react","react-router":"react-router"}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _reflux = require('reflux');
+
+var _reflux2 = _interopRequireDefault(_reflux);
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _Layout = require('./Layout');
+
+var _Layout2 = _interopRequireDefault(_Layout);
+
+var Login = _react2['default'].createClass({
+    displayName: 'Login',
+
+    render: function render() {
+        return _react2['default'].createElement(
+            _Layout2['default'],
+            { user: this.props.user },
+            this.props.errors,
+            _react2['default'].createElement(
+                'form',
+                { role: 'form', action: '/auth/local', method: 'post' },
+                _react2['default'].createElement('input', { type: 'text', name: 'identifier', placeholder: 'Username or Email' }),
+                _react2['default'].createElement('input', { type: 'password', name: 'password', placeholder: 'Password' }),
+                _react2['default'].createElement(
+                    'button',
+                    { type: 'submit' },
+                    'Sign in'
+                )
+            )
+        );
+    }
+});
+exports['default'] = Login;
+module.exports = exports['default'];
+
+},{"./Layout":5,"react":"react","reflux":"reflux"}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -379,14 +505,14 @@ var MoveTimeline = _react2['default'].createClass({
     var tofrom = '';
     var firstmove = moves ? moves.get(0) : undefined;
     if (firstmove && color == firstmove.color) {
-
       if (firstmove.from) {
         tofrom = firstmove.from + "-" + firstmove.place;
         place = moves.get(1).place;
         if (firstmove.color == 1) {
           place = tofrom = '';
         }
-      } else {
+      } else if (this.props.board.gameState != 'notyourturn') {
+        console.log(this.props.board.gameState);
         place = firstmove.place;
         tofrom = "PASS";
       }
@@ -394,14 +520,15 @@ var MoveTimeline = _react2['default'].createClass({
 
       if (color == 2 && !firstmove.from) {
         place = moves.get(2).place;
-        if (moves.get(3)) {
-          tofrom = moves.get(3).from + "-" + moves.get(3).place;
+        if (moves.get(1)) {
+          tofrom = moves.get(1).from + "-" + moves.get(1).place;
         }
       }
-      if (firstmove.from && moves.count() > 2) {
+      console.log(this.props.board.gameState);
+      if (firstmove.from && moves.count() > 2 && this.props.board.gameState != 'notyourturn') {
         place = "PASS";
       }
-    } else if (firstmove && moves.count() > 2 && color == 2) {
+    } else if (firstmove && moves.count() > 2 && color == 2 && this.props.board.gameState != 'notyourturn') {
       place = "PASS";
     }
     if (tofrom == 'pass-pass') {
@@ -425,10 +552,29 @@ var MoveTimeline = _react2['default'].createClass({
       )
     );
   },
-  join: function join(color) {},
+  joinWhiteGame: function joinWhiteGame(color) {
+    _sharedBoardActions2['default'].joinGame('white');
+  },
+  joinBlackGame: function joinBlackGame(color) {
+    _sharedBoardActions2['default'].joinGame('black');
+  },
   render: function render() {
-    var white_user = '';
-    var black_user = '';
+    var white_user = _react2['default'].createElement(
+      'div',
+      { onClick: this.joinWhiteGame },
+      'Join'
+    );
+    var black_user = _react2['default'].createElement(
+      'div',
+      { onClick: this.joinBlackGame },
+      'Join'
+    );
+    if (this.props.board.whiteUser && this.props.board.whiteUser.username) {
+      white_user = this.props.board.whiteUser.username;
+    }
+    if (this.props.board.blackUser && this.props.board.blackUser.username) {
+      black_user = this.props.board.blackUser.username;
+    }
     return _react2['default'].createElement(
       'div',
       { id: 'timeline' },
@@ -488,7 +634,99 @@ var MoveTimeline = _react2['default'].createClass({
 exports['default'] = MoveTimeline;
 module.exports = exports['default'];
 
-},{"../shared/BoardActions":8,"immutable":"immutable","react":"react","reflux":"reflux"}],6:[function(require,module,exports){
+},{"../shared/BoardActions":12,"immutable":"immutable","react":"react","reflux":"reflux"}],8:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _reflux = require('reflux');
+
+var _reflux2 = _interopRequireDefault(_reflux);
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _Layout = require('./Layout');
+
+var _Layout2 = _interopRequireDefault(_Layout);
+
+var Register = _react2['default'].createClass({
+  displayName: 'Register',
+
+  render: function render() {
+    return _react2['default'].createElement(
+      _Layout2['default'],
+      { user: this.props.user },
+      this.props.errors,
+      _react2['default'].createElement(
+        'form',
+        { role: 'form', action: '/auth/local/register', method: 'post' },
+        _react2['default'].createElement('input', { type: 'text', name: 'username', placeholder: 'Username' }),
+        _react2['default'].createElement('input', { type: 'text', name: 'email', placeholder: 'Email' }),
+        _react2['default'].createElement('input', { type: 'password', name: 'password', placeholder: 'Password' }),
+        _react2['default'].createElement(
+          'button',
+          { type: 'submit' },
+          'Sign up'
+        )
+      )
+    );
+  }
+});
+exports['default'] = Register;
+module.exports = exports['default'];
+
+},{"./Layout":5,"react":"react","reflux":"reflux"}],9:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _reflux = require('reflux');
+
+var _reflux2 = _interopRequireDefault(_reflux);
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _Layout = require('./Layout');
+
+var _Layout2 = _interopRequireDefault(_Layout);
+
+var userView = _react2['default'].createClass({
+    displayName: 'userView',
+
+    render: function render() {
+        return _react2['default'].createElement(
+            _Layout2['default'],
+            { user: this.props.loggedInAs },
+            _react2['default'].createElement(
+                'h1',
+                null,
+                this.props.user.username,
+                ' '
+            ),
+            _react2['default'].createElement(
+                'a',
+                { href: '/game/create' },
+                'New Game!! '
+            )
+        );
+    }
+});
+exports['default'] = userView;
+module.exports = exports['default'];
+
+},{"./Layout":5,"react":"react","reflux":"reflux"}],10:[function(require,module,exports){
 'use strict';
 
 var React = require('react'),
@@ -499,7 +737,7 @@ Router.run(require('./routes.js'), Router.HistoryLocation, function (Root) {
   delete window.__ReactInitState__;
 });
 
-},{"./routes.js":7,"react":"react","react-router":"react-router"}],7:[function(require,module,exports){
+},{"./routes.js":11,"react":"react","react-router":"react-router"}],11:[function(require,module,exports){
 "use strict";
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -513,10 +751,13 @@ var _reactRouter = require('react-router');
 module.exports = _react2['default'].createElement(
   _reactRouter.Route,
   { handler: _reactRouter.RouteHandler },
-  _react2['default'].createElement(_reactRouter.Route, { name: 'game', path: '/game/:id', handler: require('./GameView.js') })
+  _react2['default'].createElement(_reactRouter.Route, { name: 'game', path: '/game/:id', handler: require('./GameView.js') }),
+  _react2['default'].createElement(_reactRouter.Route, { name: 'login', path: '/login', handler: require('./Login.js') }),
+  _react2['default'].createElement(_reactRouter.Route, { name: 'user', path: '/user/:username', handler: require('./User.js') }),
+  _react2['default'].createElement(_reactRouter.Route, { name: 'register', path: '/register', handler: require('./Register.js') })
 );
 
-},{"./GameView.js":4,"react":"react","react-router":"react-router"}],8:[function(require,module,exports){
+},{"./GameView.js":4,"./Login.js":6,"./Register.js":8,"./User.js":9,"react":"react","react-router":"react-router"}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -529,11 +770,11 @@ var _reflux = require('reflux');
 
 var _reflux2 = _interopRequireDefault(_reflux);
 
-var BoardActions = _reflux2['default'].createActions(['retrieveHistory', 'placeStone', 'retrieveMove', 'pass']);
+var BoardActions = _reflux2['default'].createActions(['retrieveHistory', 'placeStone', 'retrieveMove', 'pass', 'joinGame']);
 exports['default'] = BoardActions;
 module.exports = exports['default'];
 
-},{"reflux":"reflux"}],9:[function(require,module,exports){
+},{"reflux":"reflux"}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -595,7 +836,7 @@ var Transport = (function () {
 
 exports.Transport = Transport;
 
-},{}],10:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -619,7 +860,7 @@ var validators = {
 exports["default"] = validators;
 module.exports = exports["default"];
 
-},{}],11:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -659,15 +900,25 @@ var Board = _reflux2['default'].createStore({
         this.sliding = undefined;
         this.last_move_passed = false;
         this.in_atari = false;
+        this.currentUser = {};
         this.attempted_suicide = false;
         this.history = (0, _immutable.List)();
         this.gameid = -1;
         this.onChanges = [];
+        this.whiteSocket = '';
+        this.blackSocket = '';
         this.socket = new _Transport.Transport();
         this.moves = [];
         this.listenTo(_BoardActions2['default'].placeStone, this.play.bind(this));
         this.socket.on('game', this.update.bind(this));
+
         //subscribed via this.socket.get
+    },
+    joinGame: function joinGame(color) {
+
+        var self = this;
+        console.log("her");
+        this.socket.post('/game/' + this.gameid + "/join/" + color, function (game) {});
     },
     retrieveMove: function retrieveMove(move) {
         var self = this;
@@ -677,8 +928,16 @@ var Board = _reflux2['default'].createStore({
         });
     },
 
-    retrieveHistory: function retrieveHistory(game) {
+    retrieveHistory: function retrieveHistory(game, user) {
         this.gameid = game.id;
+        this.currentUser = user;
+        if (game.white) {
+
+            this.whiteUser = game.white;
+        }
+        if (game.black) {
+            this.blackUser = game.black;
+        }
         this.socket.get('/game/' + this.gameid);
 
         this.set(game.history);
@@ -705,6 +964,7 @@ var Board = _reflux2['default'].createStore({
     },
 
     pass: function pass() {
+        if (this.gameState == 'notyourturn') return;
         var data = { game: this.gameid, place: 'pass', color: this.current_color, gameState: this.gameState };
 
         if (this.gameState == 'sliding' || this.gameState == 'slide') {
@@ -720,11 +980,32 @@ var Board = _reflux2['default'].createStore({
     //adds move to move history
     add: function add(move) {
         this.history = this.history.unshift(move);
-        this.set();
+        if (move.place != 'pass') {
+            var moveLocation = this.notationToLocation(move.place);
+            this.board[moveLocation.ring - 1][moveLocation.hour - 1] = move.color;
+            if (move.from) {
+                var fromLocation = this.notationToLocation(move.from);
+                this.board[fromLocation.ring - 1][fromLocation.hour - 1] = 0;
+            }
+
+            moveLocation.color = move.color;
+            var kills = this.emanateKill(moveLocation);
+            var self = this;
+            kills.forEach(function (kill) {
+                self.board[kill.ring - 1][kill.hour - 1] = 0;
+                if (move.color == 2) self.blackscore++;else self.whitescore++;
+            });
+        }
+        this.updategameState(move);
+
+        this.triggerBoard();
     },
     //populates the board array based on move history
     set: function set(history) {
-        if (typeof history === 'string' || history instanceof String) {
+        var fullhistory = typeof history === 'string' || history instanceof String;
+        if (fullhistory) {
+            this.whitescore = 0;
+            this.blackscore = 0;
             var moves = [];
             var regex = /#([A-Z][0-9]+|pass)([!|@])([A-Z][0-9]+|pass)|([A-Z][0-9]+|pass)([!|@])/g;
             var move = [];
@@ -745,56 +1026,73 @@ var Board = _reflux2['default'].createStore({
                 moves.unshift(move_data);
             }
             this.history = (0, _immutable.List)(moves);
+
+            var self = this;
+
+            this.board = this.history.reverse().reduce(function (board, item) {
+                if (item.place == 'pass') return board;
+                var location = self.notationToLocation(item.place);
+
+                if (location.hour > 0 && location.hour < 13 && location.ring > 0 && location.ring < 7) {
+                    board[location.ring - 1][location.hour - 1] = parseInt(item.color);
+                }
+                if (item.from) {
+                    var fromlocation = self.notationToLocation(item.from);
+                    board[fromlocation.ring - 1][fromlocation.hour - 1] = 0;
+                }
+
+                self.board = board;
+
+                location.color = item.color;
+                var kills = self.emanateKill(location);
+
+                kills.forEach(function (kill) {
+                    board[kill.ring - 1][kill.hour - 1] = 0;
+                    if (item.color == 2) self.blackscore++;else self.whitescore++;
+                });
+
+                return board;
+            }, this.create_board());
         }
-        var self = this;
-        this.whitescore = 0;
-        this.blackscore = 0;
-        this.board = this.history.reverse().reduce(function (board, item) {
-            if (item.place == 'pass') return board;
-            var location = self.notationToLocation(item.place);
-
-            if (location.hour > 0 && location.hour < 13 && location.ring > 0 && location.ring < 7) {
-                board[location.ring - 1][location.hour - 1] = parseInt(item.color);
-            }
-            if (item.from) {
-                var fromlocation = self.notationToLocation(item.from);
-                board[fromlocation.ring - 1][fromlocation.hour - 1] = 0;
-            }
-
-            self.board = board;
-
-            location.color = item.color;
-            var kills = self.emanateKill(location);
-
-            kills.forEach(function (kill) {
-                board[kill.ring - 1][kill.hour - 1] = 0;
-                if (item.color == 2) self.blackscore++;else self.whitescore++;
-            });
-
-            return board;
-        }, this.create_board());
 
         if (this.history.count() > 0) {
-
             var lastmove = this.history.get(0);
-            this.updategameState(lastmove);
-            /**/
         }
+        this.updategameState(lastmove);
         this.triggerBoard();
     },
     //move the game along based off lastest move recieved from server
     updategameState: function updategameState(lastmove) {
-        if (lastmove.from) {
-            this.gameState = 'place';
-            this.current_color = lastmove.color == this.colors.BLACK ? this.colors.WHITE : this.colors.BLACK;
-            this.sliding = undefined;
+
+        var nextcolor = lastmove.color;
+        if (lastmove && lastmove.from) nextcolor = lastmove.color == 1 ? 2 : 1;
+        console.log(nextcolor);
+        if (this.currentUser && (nextcolor == 1 && this.whiteUser.id == this.currentUser.id || nextcolor == 2 && this.blackUser.id == this.currentUser.id)) {
+            if (lastmove) {
+                if (lastmove.from) {
+                    this.gameState = 'place';
+                    this.current_color = lastmove.color == this.colors.BLACK ? this.colors.WHITE : this.colors.BLACK;
+                    this.sliding = undefined;
+                } else if (this.gameState != 'slide') {
+                    this.gameState = 'sliding';
+                }
+            } else {
+                this.gameState = 'place';
+            }
         } else {
-            this.gameState = 'sliding';
+            this.gameState = 'notyourturn';
+            this.sliding = undefined;
         }
     },
 
     update: function update(snapshot) {
+        console.log(snapshot);
         if (snapshot.verb == 'addedTo' && snapshot.attribute == 'moves') _BoardActions2['default'].retrieveMove();
+        if (snapshot.verb == 'updated' && snapshot.data.action == 'userJoined') {
+            this[snapshot.data.color + 'User'] = snapshot.data.joinedUser;
+            this.updategameState();
+            this.triggerBoard();
+        }
     },
     //this triggers a refresh and sends all the info needed for the
     //boardview and any other react elements listening.
@@ -806,15 +1104,24 @@ var Board = _reflux2['default'].createStore({
             current_color: this.current_color,
             gameState: this.gameState,
             whitescore: this.whitescore,
-            blackscore: this.blackscore
+            blackscore: this.blackscore,
+            blackUser: this.blackUser,
+            whiteUser: this.whiteUser
         });
     },
     //place or move stone
     play: function play(to) {
         if (this.gameState == 'sliding' || this.gameState == 'slide') {
+
             if (this.board[to.ring - 1][to.hour - 1] == this.current_color) {
                 this.sliding = to;
                 this.gameState = 'slide';
+
+                if (this.history.count() > 0) {
+                    var lastmove = this.history.get(0);
+                }
+                this.updategameState(lastmove);
+
                 this.triggerBoard();
                 return true;
             }
@@ -859,8 +1166,8 @@ var Board = _reflux2['default'].createStore({
         if (mn < 1) {
             mn = 1;
             hoffset += 4;
-        } else if (mn > 5) {
-            mn = 5;
+        } else if (mn > 6) {
+            mn = 6;
             hoffset += 12;
         }
         if (move.ring == 1 && n == -1 && hof2 != -1 && hof2 != 1) hoffset += 3;
@@ -872,9 +1179,9 @@ var Board = _reflux2['default'].createStore({
     },
     getAdjacent: function getAdjacent(move) {
         var movesAvaibletoSlide = [];
+
         var movesAvaibletoSlide = [this.calcoffset(move, 1), this.calcoffset(move, -1), this.calcoffset(move, 1, -1), this.calcoffset(move, -1, 1)];
-        if (move.ring == 6) delete movesAvaibletoSlide[2];
-        if (move.ring == 6) delete movesAvaibletoSlide[1];
+        if (move.ring == 6) movesAvaibletoSlide.splice(1, 2);
         return movesAvaibletoSlide;
     },
 
@@ -1012,7 +1319,6 @@ var Board = _reflux2['default'].createStore({
                 if (atari === 0) {
 
                     killedgroup = killedgroup.concat(enemyGroup);
-                    console.log(killedgroup);
                 }
             }
         });
@@ -1092,4 +1398,4 @@ var Board = _reflux2['default'].createStore({
 exports['default'] = Board;
 module.exports = exports['default'];
 
-},{"./BoardActions":8,"./Transport":9,"immutable":"immutable","reflux":"reflux"}]},{},[6]);
+},{"./BoardActions":12,"./Transport":13,"immutable":"immutable","reflux":"reflux"}]},{},[10]);

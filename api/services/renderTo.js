@@ -1,6 +1,6 @@
 var React = require('react')
   , Router = require('react-router');
-var Layout = require('../../components/layout.js');
+var Layout = require('../../components/Layout');
 module.exports = function(routes, method, url, locals, state) {
   Router.run(routes, url, (Root) => {
     if (state)

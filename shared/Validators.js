@@ -16,6 +16,10 @@
             });
           }
           return slidable;
+     },
+     placeable: function(board,move) {
+      return !(board.gameState=='sliding'|| board.gameState=='notyourturn' ||
+                ( board.sliding&& !this.slidable( board.sliding, move ) ) )    
      }
   }
   export default validators;

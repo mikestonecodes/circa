@@ -41,6 +41,7 @@ module.exports.routes = {
 'get /game/:id': 'GameController.show',
 'get /user/:username': 'UserController.show',
 'post /game/:id/join/:color': 'GameController.join',
+'post /game/:id/submitChatMessage/:message': 'GameController.submitChatMessage',
   '/': {
     view: 'homepage'
   },

@@ -60,7 +60,12 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-
+aside
+{
+  float:left;
+  width:30%;
+  height: 100%;
+}
 
 
 
@@ -80,21 +85,56 @@ body
 
 }
 
-a:visited {
-    color: green;
+
+nav:before {
+    box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+    content: "";
+    height: 56px;
+    left: -2%;
+    position: fixed;
+
+    width: 104%;
+    will-change: top,left;
+}
+nav a
+{
+  text-decoration: none;
+  color:white;
+}
+ a:visited
+{
+  color:green;
+}
+html body
+{
+  height:100%;
+}
+nav a:visited {
+    color: white;
 }
 nav
 {
+  z-index: 22;
+  position: fixed;
   background-color: rgb(73,73,86);
   width:100%;
-  height: 50px;
+  height: 56px;
+  padding-left: 20px;
+  /* This aligns items to the end line on main-axis */
+  
+      display: -webkit-flex;
+    display: flex;
+    flex: 1;
 }
 #login
 {
-      float: right;
+    display: flex;
+    position: fixed;
+    margin: auto 0;
+    right:0;
+    height: 56px;
     padding-right: 20px;
-    padding-top: 16px;
-
+    margin: 20px 0 0 5px;
 }
 h1
 {
@@ -104,17 +144,30 @@ h1
 }
 #title
 {
-  float: left;
-  font-size: 45px;
+  font-size: 2.0em;
+  
+ margin: auto 0;
 
+}
+#main
+{
+      padding-top: 56px;
 }
 .board
 {
-      padding: 2%;
-    max-width: 600px;
-    min-width: 387px;
+    
+   padding-top: 50px;
+      padding-bottom: 100px;
     float: left;
-    margin-left: 5%;
+    padding-left: 50px;
+    padding-right: 50px;
+    margin-left: 8.75%;
+ -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+
 }
 }
 .black

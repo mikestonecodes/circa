@@ -23,6 +23,7 @@
     "grunt-contrib-uglify": "~0.4.0",
     "grunt-contrib-watch": "~0.5.3",
     "grunt-sails-linker": "~0.9.5",
+    "grunt-sass": "^1.0.0",
     "grunt-shell": "^1.1.2",
     "grunt-sync": "~0.0.4",
     "immutable": "^3.7.4",
@@ -45,7 +46,9 @@
     "sails-hook-babel": "~5.0.1",
     "sails-mongo": "^0.11.2",
     "seamless-immutable": "~3.0.0",
-    "validator": "~4.0.5"
+    "socket.io-client": "github:jldec/socket.io",
+    "validator": "~4.0.5",
+    "waterline": "github:Atlantis-Software/waterline"
   },
   "scripts": {
     "start": "node app.js",

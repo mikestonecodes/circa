@@ -1,8 +1,10 @@
 #timeline {
-    float: right;
+ 
     width: 250px;
-    margin-right: 10%;
-    margin-top: 4%;
+       margin-right: 15px;
+    margin-top: 30px;
+    height: 400px;
+    overflow: auto;
 }
 
 .whitedisplay {
@@ -44,7 +46,14 @@
   top: 5px;
   height: 25px;
   border: 1px solid white; }
-
+#timer
+{
+  position: fixed;
+  padding: 20px;
+  bottom:0;
+  right: 0;
+  font-size: 30px;
+}
 .leftmove:after {
   right: 65px;
   border-right: none;

@@ -2,7 +2,10 @@ export class Transport {
   constructor() {
       this.socket = typeof io !== "undefined" ? io.socket : null;
   }
-
+  broadcast(url,cb) {
+    if (!this.socket) return;
+    sails.sockets.broadcast(url, cb);
+  }
   on(url,cb) {
     if (!this.socket) return;
     this.socket.on(url, cb);

@@ -11,6 +11,14 @@ import BoardIntersection from './BoardIntersection';
     render: function() {
         if(this.props.board.board){
         var intersections = [];
+        var circles=[];
+        for (var n=12; n>=0; n--) {
+            var color = n%2?"black":"white",
+            height=800,width=800,
+            chakraRadius=width/4;
+            circles.push( (<circle fill="rgba(0,0,0,0)" stroke={color} stroke-width="2" cx={0.5*(height / 2.0 + chakraRadius*Math.sin(2*Math.PI*n/12))} cy={0.5*(height / 2 + chakraRadius*Math.cos(2*Math.PI*n/12))} r="100"/>)); 
+        };
+        console.log(circles);
         for (var i=0; i<6; i++) 
              for (var j = 0; j < 12; j++)
                 intersections.push( ( 
@@ -23,9 +31,9 @@ import BoardIntersection from './BoardIntersection';
                   > </BoardIntersection>
                 ) ); 
         
-        return  <svg  version="1.1" width="50%" xmlns="http://www.w3.org/2000/svg" className='board'  viewBox="0 0 400 400" ><g>{BoardGraphics}</g><g>{intersections}</g></svg> ;
+        return  <svg  version="1.1" width="50%" xmlns="http://www.w3.org/2000/svg" className='board'  viewBox="0 0 400 400" >{BoardGraphics}<g>{circles}</g><g>{intersections}</g></svg> ;
       }else{
-        return <svg  version="1.1" width="50%"  xmlns="http://www.w3.org/2000/svg"  className='board' viewBox="0 0 400 400"><g>{BoardGraphics}</g></svg>
+        return <svg  version="1.1" width="50%"  xmlns="http://www.w3.org/2000/svg"  className='board' viewBox="0 0 400 400">{BoardGraphics}<g>{circles}</g></svg>
       }
     }
 });

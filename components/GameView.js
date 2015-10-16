@@ -6,6 +6,7 @@ import BoardView from './BoardView';
 import Layout from './Layout';
 import MoveTimeline from './MoveTimeline';
 import ChatView from './ChatView';
+import ReactZeroClipboard from 'react-zeroclipboard';
     const gameView = React.createClass({
        mixins: [Reflux.connect(boardStore, 'boardstore')],
         getInitialState: function(){return {boardstore:{}};},
@@ -13,16 +14,46 @@ import ChatView from './ChatView';
        // When this component is loaded, fetch initial data
        BoardActions.retrieveHistory(this.props.game,this.props.user,this.props.messages);
     },
+      begin: function(){
+
+         BoardActions.begin();
+      },
       render: function() {
+         var gameclass='starting';
+         console.log(this.state.boardstore);
+         var starting= <div className='popup'>
+         <h2>New game</h2>
+         <div>
+            <ReactZeroClipboard 
+                 getText={function(){ return location.href; }}
+                 getHtml={function(){ return '<a href="' + location.href + '">Play Circa</a>'; }}>
+                  <button  className='invitetoclip'  >Invite URL to clipboard</button>
+              </ReactZeroClipboard>
+            <input/>
+           <div className='popupbegin' onClick={this.begin}>Begin</div>
+           </div>
+         </div>
+         console.log(this.props.game.creator,this.props.user);
+         if(!this.props.user||this.props.game.creator!=this.props.user.id)
+         {
+            starting=<div className='popup'>game starting</div>
+         }
+         if(this.state.boardstore.gameState!='starting'){
+           gameclass='';
+           starting= <div></div>;
+         } 
           return (
             <Layout user={this.props.user}>
-                 
-                    <aside id='leftside'>
-                    <MoveTimeline  board={this.state.boardstore} />
-                    <ChatView board={this.state.boardstore} />
-                    </aside>
+                    {starting}
+                    <div id='game' className={gameclass}>
+
+                      <aside id='leftside'>
+                      <MoveTimeline  board={this.state.boardstore} />
+                     <ChatView board={this.state.boardstore} />
+                      </aside>
                      <BoardView  board={this.state.boardstore} />
                      <div id='timer'>{this.state.boardstore.timer}</div>
+                     </div>
            </Layout>
           )
       }

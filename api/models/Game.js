@@ -12,6 +12,14 @@ module.exports = {
       type:'string',
        defaultsTo : ''
     },
+    creator:{
+      model:'user',
+      defaultsTo : {}
+    },
+    state:{
+      type:'string',
+      defaultsTo:'starting'
+    },
   timer:{
       type:'int',
        defaultsTo :100

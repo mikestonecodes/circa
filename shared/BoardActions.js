@@ -5,7 +5,8 @@ var BoardActions = Reflux.createActions([
   'retrieveMove',
   'pass',
   'joinGame',
-  'submitChatMessage'
+  'submitChatMessage',
+  'begin'
 
 ]);
 export default BoardActions;

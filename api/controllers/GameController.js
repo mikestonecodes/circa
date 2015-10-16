@@ -37,11 +37,15 @@ module.exports = {
   create : function(req,res,next)
   {
     console.log("create");
-  	Game.create({}, function(err, game) {
-        if (err) return next(err);
-        res.redirect("/game/"+game.id);
-
-    });
+    if(req.user){
+    	Game.create({creator:req.user}, function(err, game) {
+          if (err) return next(err);
+          res.redirect("/game/"+game.id);
+          
+      });
+  }else{
+    res.redirect("/login");
+  }
   },
   submitChatMessage: function(req,res)
   {

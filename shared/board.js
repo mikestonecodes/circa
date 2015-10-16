@@ -15,8 +15,8 @@ import {List} from 'immutable'
 	    this.turn =this.colors.BLACK;
 	    //a 2D array representing all the stones currently on the board. board[ring][hour]
 	    //0th index is ring 1, the most inner ring. index 6 the most outer ring. 0th hour is 1 oclock, 11 is 12 oclock
-	    this.board = this.create_board();
-	    this.gameState= 'place';
+
+	   
 	    this.whitescore=0;
         this.blackscore=0;
         this.captured=[];
@@ -36,6 +36,17 @@ import {List} from 'immutable'
         var countdown=1000;
         var self=this;
 	},
+    begin:function()
+    {
+            console.log('a');
+        this.gameState='joining';
+        var self=this;
+        io.socket.put('/game/'+this.gameid, { state: 'playing' }, function (resData) {
+             self.triggerBoard();
+        });
+       
+       
+    },
     joinGame: function(color)
     {
         this.socket.post('/game/'+this.gameid+"/join/"+color)
@@ -50,6 +61,9 @@ import {List} from 'immutable'
 	},
 	retrieveHistory:function(game,user,messages)
 	{
+        console.log(user);
+        
+        if(game.state=='starting') this.gameState= 'starting';
     	this.gameid=game.id;
         this.currentUser=user;
         this.whiteUser=game.white || game.white;
@@ -160,6 +174,7 @@ import {List} from 'immutable'
 	//move the game along based off lastest move recieved from server
 	updategameState: function()
 	{
+        if(this.gameState=='starting')return;
         var lastmove=this.history.get(0) || this.history.count()>0;
         var nextcolor=2;
         if(lastmove){
@@ -181,7 +196,7 @@ import {List} from 'immutable'
             }else{
                this.gameState='place';
             }
-        }else{
+        }else if(this.gameState!='joining'){
             this.gameState='notyourturn';
             this.sliding=undefined;
         }
@@ -262,8 +277,10 @@ import {List} from 'immutable'
            return string+capture.color+self.locationToNotation(capture);
         },'');
     },
+
 	//Terrority counter functions
 	//Group Library
+    
 	calcoffset :function(move,n,hof2) {
             var mn=move.ring+n;
             var hoffset=hof2||0; 

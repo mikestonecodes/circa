@@ -144,6 +144,7 @@ var BoardIntersection = _react2['default'].createClass({
   },
 
   render: function render() {
+    console.log(this.props.board.gameState);
     var classes = "intersection ";
     //start with defualt small intersection
     var r = 200 / 24;
@@ -177,7 +178,7 @@ var BoardIntersection = _react2['default'].createClass({
 exports['default'] = BoardIntersection;
 module.exports = exports['default'];
 
-},{"../shared/BoardActions":13,"../shared/Validators":15,"react":"react","reflux":"reflux"}],3:[function(require,module,exports){
+},{"../shared/BoardActions":16,"../shared/Validators":18,"react":"react","reflux":"reflux"}],3:[function(require,module,exports){
 'use strict';
 Object.defineProperty(exports, '__esModule', {
   value: true
@@ -352,7 +353,7 @@ var ChatView = _react2['default'].createClass({
 exports['default'] = ChatView;
 module.exports = exports['default'];
 
-},{"../shared/BoardActions":13,"immutable":"immutable","react":"react","reflux":"reflux"}],5:[function(require,module,exports){
+},{"../shared/BoardActions":16,"immutable":"immutable","react":"react","reflux":"reflux"}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -393,6 +394,10 @@ var _ChatView = require('./ChatView');
 
 var _ChatView2 = _interopRequireDefault(_ChatView);
 
+var _reactZeroclipboard = require('react-zeroclipboard');
+
+var _reactZeroclipboard2 = _interopRequireDefault(_reactZeroclipboard);
+
 var gameView = _react2['default'].createClass({
   displayName: 'gameView',
 
@@ -404,21 +409,78 @@ var gameView = _react2['default'].createClass({
     // When this component is loaded, fetch initial data
     _sharedBoardActions2['default'].retrieveHistory(this.props.game, this.props.user, this.props.messages);
   },
+  begin: function begin() {
+
+    _sharedBoardActions2['default'].begin();
+  },
   render: function render() {
+    var gameclass = 'starting';
+    console.log(this.state.boardstore);
+    var starting = _react2['default'].createElement(
+      'div',
+      { className: 'popup' },
+      _react2['default'].createElement(
+        'h2',
+        null,
+        'New game'
+      ),
+      _react2['default'].createElement(
+        'div',
+        null,
+        _react2['default'].createElement(
+          _reactZeroclipboard2['default'],
+          {
+            getText: function () {
+              return location.href;
+            },
+            getHtml: function () {
+              return '<a href="' + location.href + '">Play Circa</a>';
+            } },
+          _react2['default'].createElement(
+            'button',
+            { className: 'invitetoclip' },
+            'Invite URL to clipboard'
+          )
+        ),
+        _react2['default'].createElement('input', null),
+        _react2['default'].createElement(
+          'div',
+          { className: 'popupbegin', onClick: this.begin },
+          'Begin'
+        )
+      )
+    );
+    console.log(this.props.game.creator, this.props.user);
+    if (!this.props.user || this.props.game.creator != this.props.user.id) {
+      starting = _react2['default'].createElement(
+        'div',
+        { className: 'popup' },
+        'game starting'
+      );
+    }
+    if (this.state.boardstore.gameState != 'starting') {
+      gameclass = '';
+      starting = _react2['default'].createElement('div', null);
+    }
     return _react2['default'].createElement(
       _Layout2['default'],
       { user: this.props.user },
-      _react2['default'].createElement(
-        'aside',
-        { id: 'leftside' },
-        _react2['default'].createElement(_MoveTimeline2['default'], { board: this.state.boardstore }),
-        _react2['default'].createElement(_ChatView2['default'], { board: this.state.boardstore })
-      ),
-      _react2['default'].createElement(_BoardView2['default'], { board: this.state.boardstore }),
+      starting,
       _react2['default'].createElement(
         'div',
-        { id: 'timer' },
-        this.state.boardstore.timer
+        { id: 'game', className: gameclass },
+        _react2['default'].createElement(
+          'aside',
+          { id: 'leftside' },
+          _react2['default'].createElement(_MoveTimeline2['default'], { board: this.state.boardstore }),
+          _react2['default'].createElement(_ChatView2['default'], { board: this.state.boardstore })
+        ),
+        _react2['default'].createElement(_BoardView2['default'], { board: this.state.boardstore }),
+        _react2['default'].createElement(
+          'div',
+          { id: 'timer' },
+          this.state.boardstore.timer
+        )
       )
     );
   }
@@ -426,7 +488,7 @@ var gameView = _react2['default'].createClass({
 exports['default'] = gameView;
 module.exports = exports['default'];
 
-},{"../shared/BoardActions":13,"../shared/board":16,"./BoardView":3,"./ChatView":4,"./Layout":6,"./MoveTimeline":8,"react":"react","reflux":"reflux"}],6:[function(require,module,exports){
+},{"../shared/BoardActions":16,"../shared/board":19,"./BoardView":3,"./ChatView":4,"./Layout":6,"./MoveTimeline":8,"react":"react","react-zeroclipboard":14,"reflux":"reflux"}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, '__esModule', {
@@ -757,7 +819,7 @@ var MoveTimeline = _react2['default'].createClass({
 exports['default'] = MoveTimeline;
 module.exports = exports['default'];
 
-},{"../shared/BoardActions":13,"immutable":"immutable","react":"react","reflux":"reflux"}],9:[function(require,module,exports){
+},{"../shared/BoardActions":16,"immutable":"immutable","react":"react","reflux":"reflux"}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -881,6 +943,336 @@ module.exports = _react2['default'].createElement(
 );
 
 },{"./GameView.js":5,"./Login.js":7,"./Register.js":9,"./User.js":10,"react":"react","react-router":"react-router"}],13:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = setTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    clearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],14:[function(require,module,exports){
+(function (process,global){
+var react = require('react');
+var loadScript = require('./loadScript');
+var ZeroClipboard, client;
+
+// callbacks waiting for ZeroClipboard to load
+var waitingForScriptToLoad = [];
+
+// these are the active elements using ZeroClipboardComponent
+// each item in the array should be a [element, callback] pair
+var eventHandlers = {
+    copy: [],
+    afterCopy: [],
+    error: [],
+    ready: []
+};
+
+// add a listener, and returns a remover
+var addZeroListener = function(event, el, fn){
+    eventHandlers[event].push([el, fn]);
+    return function(){
+        var handlers = eventHandlers[event];
+        for (var i=0; i<handlers.length; i++) {
+            if (handlers[i][0] === el) {
+                // mutate the array to remove the listener
+                handlers.splice(i, 1);
+                return;
+            }
+        }
+    };
+};
+
+var propToEvent = {
+    onCopy: 'copy',
+    onAfterCopy: 'afterCopy',
+    onError: 'error',
+    onReady: 'ready'
+};
+
+var readyEventHasHappened = false;
+
+// asynchronusly load ZeroClipboard from cdnjs
+// it should automatically discover the SWF location using some clever hacks :-)
+var handleZeroClipLoad = function(error){
+    if (error) {
+        console.error("Couldn't load zeroclipboard from CDNJS.  Copy will not work.  "
+            + "Check your Content-Security-Policy.");
+        console.error(error);
+    }
+
+    // grab it and free up the global
+    ZeroClipboard = global.ZeroClipboard;
+    delete global.ZeroClipboard;
+
+    client = new ZeroClipboard();
+
+    var handleEvent = function(eventName){
+        client.on(eventName, function(event){
+            // ready has no active element
+            if (eventName === 'ready') {
+                eventHandlers[eventName].forEach(function(xs){
+                    xs[1](event);
+                });
+
+                readyEventHasHappened = true;
+                return;
+            }
+
+            var activeElement = ZeroClipboard.activeElement();
+
+            // find an event handler for this element
+            // we use some so we don't continue looking after a match is found
+            eventHandlers[eventName].some(function(xs){
+                var element = xs[0], callback = xs[1];
+                if (element === activeElement) {
+                    callback(event);
+                    return true;
+                }
+            });
+        });
+    };
+
+    for (var eventName in eventHandlers) {
+        handleEvent(eventName);
+    }
+
+    // call the callbacks when ZeroClipboard is ready
+    // these are set in ReactZeroClipboard::componentDidMount
+    waitingForScriptToLoad.forEach(function(callback){
+        callback();
+    });
+};
+
+if (global.ZeroClipboard) {
+    handleZeroClipLoad(null);
+}
+else {
+    // load zeroclipboard from CDN
+    // in production we want the minified version
+    var ZERO_CLIPBOARD_SOURCE = '//cdnjs.cloudflare.com/ajax/libs/zeroclipboard/2.1.5/ZeroClipboard';
+    loadScript("development" === 'production' ? ZERO_CLIPBOARD_SOURCE + '.min.js' : ZERO_CLIPBOARD_SOURCE + '.js', handleZeroClipLoad);
+}
+
+// <ReactZeroClipboard 
+//   text="text to copy"
+//   html="<b>html to copy</b>"
+//   richText="{\\rtf1\\ansi\n{\\b rich text to copy}}"
+//   getText={(Void -> String)}
+//   getHtml={(Void -> String)}
+//   getRichText={(Void -> String)}
+//
+//   onCopy={(Event -> Void)}
+//   onAfterCopy={(Event -> Void)}
+//   onErrorCopy={(Error -> Void)}
+//
+//   onReady={(Event -> Void)}
+// />
+var ReactZeroClipboard = react.createClass({
+    ready: function(cb){
+        if (client) {
+            // nextTick guarentees asynchronus execution
+            process.nextTick(cb.bind(this));
+        }
+        else {
+            waitingForScriptToLoad.push(cb.bind(this));
+        }
+    },
+    componentWillMount: function(){
+        if (readyEventHasHappened && this.props.onReady) {
+            this.props.onReady();
+        }
+    },
+    componentDidMount: function(){
+        // wait for ZeroClipboard to be ready, and then bind it to our element
+        this.eventRemovers = [];
+        this.ready(function(){
+            if (!this.isMounted()) return;
+            var el = react.findDOMNode(this);
+            client.clip(el);
+
+            // translate our props to ZeroClipboard events, and add them to
+            // our listeners
+            for (var prop in this.props) {
+                var eventName = propToEvent[prop];
+
+                if (eventName && typeof this.props[prop] === "function") {
+                    var remover = addZeroListener(eventName, el, this.props[prop]);
+                    this.eventRemovers.push(remover);
+                }
+            }
+
+            var remover = addZeroListener("copy", el, this.handleCopy);
+            this.eventRemovers.push(remover);
+        });
+    },
+    componentWillUnmount: function(){
+        if (client) {
+            client.unclip(this.getDOMNode());
+        }
+
+        // remove our event listener
+        this.eventRemovers.forEach(function(fn){ fn(); });
+    },
+    handleCopy: function(){
+        var p = this.props;
+
+        // grab or calculate the different data types
+        var text = result(p.getText || p.text);
+        var html = result(p.getHtml || p.html);
+        var richText = result(p.getRichText || p.richText);
+        
+        // give ourselves a fresh slate and then set
+        // any provided data types
+        client.clearData();
+        richText != null && client.setRichText(richText);
+        html     != null && client.setHtml(html);
+        text     != null && client.setText(text);
+    },
+    render: function(){
+        return react.Children.only(this.props.children);
+    }
+});
+module.exports = ReactZeroClipboard;
+
+function result(fnOrValue) {
+    if (typeof fnOrValue === "function") {
+        // call it if it's a function
+        return fnOrValue();
+    }
+    else {
+        // just return it as is
+        return fnOrValue;
+    }
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./loadScript":15,"_process":13,"react":"react"}],15:[function(require,module,exports){
+var loading = {};
+
+module.exports = function loadScript(src, callback){
+    if (typeof(window) === 'undefined') return;
+    
+    // we don't want duplicate script elements
+    // so we use an array of callbacks instead of
+    // multiple onload handlers
+    if (loading[src]) {
+        loading[src].push(callback);
+        return;
+    }
+
+    // create the array of callbacks
+    loading[src] = [callback];
+
+    // create a script, and handle success/failure in node callback style
+    var script = document.createElement('script');
+    script.onload = function(){
+        loading[src].forEach(function(cb){
+            cb();
+        });
+        delete loading[src];
+    };
+
+    script.onerror = function(error){
+        loading[src].forEach(function(cb){
+            cb(error)
+        });
+        delete loading[src];
+    };
+
+    // set the src and append it to the head
+    // I believe async is true by default, but there's no harm in setting it
+    script.async = true;
+    script.src = src;
+    document.head.appendChild(script);
+};
+
+},{}],16:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -893,11 +1285,11 @@ var _reflux = require('reflux');
 
 var _reflux2 = _interopRequireDefault(_reflux);
 
-var BoardActions = _reflux2['default'].createActions(['retrieveHistory', 'placeStone', 'retrieveMove', 'pass', 'joinGame', 'submitChatMessage']);
+var BoardActions = _reflux2['default'].createActions(['retrieveHistory', 'placeStone', 'retrieveMove', 'pass', 'joinGame', 'submitChatMessage', 'begin']);
 exports['default'] = BoardActions;
 module.exports = exports['default'];
 
-},{"reflux":"reflux"}],14:[function(require,module,exports){
+},{"reflux":"reflux"}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -965,7 +1357,7 @@ var Transport = (function () {
 
 exports.Transport = Transport;
 
-},{}],15:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -985,14 +1377,15 @@ var validators = {
     }
     return slidable;
   },
+
   placeable: function placeable(board, move) {
-    return !(board.gameState == 'sliding' || board.gameState == 'notyourturn' || board.sliding && !this.slidable(board.sliding, move));
+    return !(board.gameState == 'sliding' || board.gameState == 'notyourturn' || board.gameState == 'joining' || board.sliding && !this.slidable(board.sliding, move));
   }
 };
 exports['default'] = validators;
 module.exports = exports['default'];
 
-},{}],16:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -1028,8 +1421,7 @@ var Board = _reflux2['default'].createStore({
         this.turn = this.colors.BLACK;
         //a 2D array representing all the stones currently on the board. board[ring][hour]
         //0th index is ring 1, the most inner ring. index 6 the most outer ring. 0th hour is 1 oclock, 11 is 12 oclock
-        this.board = this.create_board();
-        this.gameState = 'place';
+
         this.whitescore = 0;
         this.blackscore = 0;
         this.captured = [];
@@ -1049,6 +1441,14 @@ var Board = _reflux2['default'].createStore({
         var countdown = 1000;
         var self = this;
     },
+    begin: function begin() {
+        console.log('a');
+        this.gameState = 'joining';
+        var self = this;
+        io.socket.put('/game/' + this.gameid, { state: 'playing' }, function (resData) {
+            self.triggerBoard();
+        });
+    },
     joinGame: function joinGame(color) {
         this.socket.post('/game/' + this.gameid + "/join/" + color);
     },
@@ -1060,6 +1460,9 @@ var Board = _reflux2['default'].createStore({
         });
     },
     retrieveHistory: function retrieveHistory(game, user, messages) {
+        console.log(user);
+
+        if (game.state == 'starting') this.gameState = 'starting';
         this.gameid = game.id;
         this.currentUser = user;
         this.whiteUser = game.white || game.white;
@@ -1162,6 +1565,7 @@ var Board = _reflux2['default'].createStore({
     },
     //move the game along based off lastest move recieved from server
     updategameState: function updategameState() {
+        if (this.gameState == 'starting') return;
         var lastmove = this.history.get(0) || this.history.count() > 0;
         var nextcolor = 2;
         if (lastmove) {
@@ -1181,7 +1585,7 @@ var Board = _reflux2['default'].createStore({
             } else {
                 this.gameState = 'place';
             }
-        } else {
+        } else if (this.gameState != 'joining') {
             this.gameState = 'notyourturn';
             this.sliding = undefined;
         }
@@ -1259,8 +1663,10 @@ var Board = _reflux2['default'].createStore({
             return string + capture.color + self.locationToNotation(capture);
         }, '');
     },
+
     //Terrority counter functions
     //Group Library
+
     calcoffset: function calcoffset(move, n, hof2) {
         var mn = move.ring + n;
         var hoffset = hof2 || 0;
@@ -1470,4 +1876,4 @@ var Board = _reflux2['default'].createStore({
 exports['default'] = Board;
 module.exports = exports['default'];
 
-},{"./BoardActions":13,"./Transport":14,"./Validators":15,"immutable":"immutable","reflux":"reflux"}]},{},[11]);
+},{"./BoardActions":16,"./Transport":17,"./Validators":18,"immutable":"immutable","reflux":"reflux"}]},{},[11]);

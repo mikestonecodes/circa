@@ -126,6 +126,19 @@ nav
     display: flex;
     flex: 1;
 }
+.starting
+{
+   background-size: cover;
+  display: block;
+  filter: blur(5px);
+  -webkit-filter: blur(5px);
+  height: 800px;
+  left: 0;
+  position: fixed;
+  right: 0;
+  z-index: 1;
+  pointer-events: none;
+}
 #login
 {
     display: flex;
@@ -170,6 +183,7 @@ h1
 
 }
 }
+
 .black
 {
 	fill:black;
@@ -177,6 +191,42 @@ h1
 .white
 {
 	fill:white;
+}
+h2
+{
+  font-size: 30px;
+}
+.popupbegin
+{
+  bottom:15px;
+  right:15px;
+  font-size: 30px;
+  color:green;
+  position: absolute;
+}
+.invitetoclip
+{
+    bottom:15px;
+    background-color: rgba(0,0,0,0);
+    border: none;
+  left:15px;
+  font-size: 20px;
+  color:green;
+  position: absolute;
+}
+.popup
+{
+
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    background-color: gray;
+    z-index: 100;
+    height: 400px;
+    margin-top: -200px;
+    padding:30px;
+    width: 600px;
+    margin-left: -300px;
 }
 .empty
 {

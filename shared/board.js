@@ -16,9 +16,10 @@ import {List} from 'immutable'
 	    //a 2D array representing all the stones currently on the board. board[ring][hour]
 	    //0th index is ring 1, the most inner ring. index 6 the most outer ring. 0th hour is 1 oclock, 11 is 12 oclock
 
-	   
 	    this.whitescore=0;
         this.blackscore=0;
+        this.blackcaptures=0;
+        this.whitecaptures=0;
         this.captured=[];
 	    this.sliding= undefined;
         this.currentUser={};
@@ -27,8 +28,8 @@ import {List} from 'immutable'
 	    this.gameid=-1;
     	this.onChanges = [];
         this.whiteSocket='';
-       
-        this.blackSocket='';
+        
+        this.blackSocket='';    
     	this.socket = new Transport();
     	this.moves = []; 
     	this.listenTo(BoardActions.placeStone,this.play.bind(this));
@@ -36,16 +37,13 @@ import {List} from 'immutable'
         var countdown=1000;
         var self=this;
 	},
-    begin:function()
-    {
-            console.log('a');
+    begin:function(options)
+    {         
         this.gameState='joining';
         var self=this;
-        io.socket.put('/game/'+this.gameid, { state: 'playing' }, function (resData) {
+        io.socket.put('/game/'+this.gameid, { state: 'playing',timer:options.timer }, function (resData) {
              self.triggerBoard();
-        });
-       
-       
+        });  
     },
     joinGame: function(color)
     {
@@ -61,7 +59,6 @@ import {List} from 'immutable'
 	},
 	retrieveHistory:function(game,user,messages)
 	{
-        console.log(user);
         
         if(game.state=='starting') this.gameState= 'starting';
     	this.gameid=game.id;
@@ -69,7 +66,7 @@ import {List} from 'immutable'
         this.whiteUser=game.white || game.white;
         this.blackUser=game.black || game.black;
     	this.socket.get('/game/'+this.gameid);	
-        console.log(game);
+      
         this.messages=List(messages);
      	this.set(game.history);
 	},
@@ -97,6 +94,9 @@ import {List} from 'immutable'
 	    return m;
 	},
 	pass :function() {
+        var cv=this.consecutivePasses=this.history.slice(0, 3).every(function(move){
+            return move.place=='pass';
+        });
         if(this.gameState=='notyourturn'){
             return;
         }
@@ -104,29 +104,67 @@ import {List} from 'immutable'
 	    if(this.gameState=='sliding'||this.gameState=='slide') {
 			data['from']='pass';	
     	}
-    	this.socket.post("/move",data);
+        if(cv && this.turn==1&&(this.gameState=='sliding'||this.gameState=='slide')) {
+            this.endGame();
+        } else {
+           
+    	   this.socket.post("/move",data);
+        }
 	},
-	end_game: function() {
+	endGame: function() {
+
 	    console.log("GAME OVER");
+        this.socket.post('/game/'+this.gameid+"/endGame/")
+        
 	},
+    //Deletes and scores captured pieces. location is newly added piece to the board.
+    kill: function(board,newPiece)
+    {
+
+        var self=this;
+        this.emanateKill(newPiece).forEach(function(kill){
+           
+                var positionColor= board[kill.ring-1][kill.hour-1];
+            
+               // console.log(kill);
+             //  board[kill.ring-1][kill.hour-1]=2;
+                if(newPiece.color==2&&positionColor==1){
+                    self.blackscore++
+                    board[kill.ring-1][kill.hour-1]=0;
+                }
+                else if(newPiece.color==1&&positionColor==2) {
+                    self.whitescore++;
+                    board[kill.ring-1][kill.hour-1]=0;
+                }
+                
+            });
+    },
 	//adds move to move history
 	add : function(move)
 	{
 		this.history=this.history.unshift(move);
         if(move.place!='pass'){
             var moveLocation=this.notationToLocation(move.place);
-            this.board[moveLocation.ring-1][moveLocation.hour-1]=move.color;
+           //this.board[moveLocation.ring-1][moveLocation.hour-1]=move.color;
             if(move.from){
                 var fromLocation=this.notationToLocation(move.from);
                 this.board[fromLocation.ring-1][fromLocation.hour-1]=0;
             } 
             moveLocation.color=move.color;
             var self=this;
-            this.emanateKill(moveLocation).forEach(function(kill){
-               self.board[kill.ring-1][kill.hour-1]=0;
-               if(move.color==2)self.blackscore++
-               else self.whitescore++;
-            });
+            console.log(move);
+            this.kill(this.board,moveLocation);
+           /* this.emanateKill(moveLocation).forEach(function(kill){
+
+                var positionColor= self.board[kill.ring-1][kill.hour-1];
+                if(item.color==2&&positionColor==1)self.blackscore++
+                else if(item.color==2&&positionColor==2) self.whitescore++;
+                self.board[kill.ring-1][kill.hour-1]=0;
+
+              // self.board[kill.ring-1][kill.hour-1]=0;
+               //if(move.color==2)self.blackscore++
+               //else self.whitescore++;
+            });*/
         }
         this.triggerBoard();
 	},
@@ -162,11 +200,13 @@ import {List} from 'immutable'
         	}
             self.board=board;
             location.color=item.color;
-            self.emanateKill(location).forEach(function(kill){
+            self.kill(self.board,location);
+            /*self.emanateKill(location).forEach(function(kill){
+                var positionColor= board[kill.ring-1][kill.hour-1];
+                if(item.color==2&&positionColor==1)self.blackscore++
+                else if(item.color==2&&positionColor==2) self.whitescore++;
                 board[kill.ring-1][kill.hour-1]=0;
-                if(item.color==2)self.blackscore++
-                else self.whitescore++;
-            });
+            });*/
             return board;
         },this.create_board());    
         this.triggerBoard();
@@ -207,7 +247,7 @@ import {List} from 'immutable'
     },
 	update: function(snapshot)
 	{
-        console.log(snapshot);
+        
         if(snapshot.verb=='addedTo'&&snapshot.attribute=='moves') {
 		  BoardActions.retrieveMove();
         }
@@ -217,12 +257,16 @@ import {List} from 'immutable'
         }
         if(snapshot.verb=='updated'&&snapshot.data.action=='timer'){
            this.timer=snapshot.data.timer;
-            console.log(this.timer);
+           
            this.triggerBoard();      
         }
         if(snapshot.verb=='updated'&&snapshot.data.action=='userJoined'){
            this[ snapshot.data.color+'User']=snapshot.data.joinedUser;
            this.triggerBoard();      
+        }
+        if(snapshot.verb=='updated'&&snapshot.data.action=='ending')
+        {
+            this.calculateWin();
         }
 	},
 	//this triggers a refresh and sends all the info needed for the 
@@ -246,6 +290,7 @@ import {List} from 'immutable'
 	},
 	//place or move stone 
 	play:  function(to) {
+        this.consecutivePasses=0;
 		if(this.gameState == 'sliding' || this.gameState == 'slide' ){
 			if(this.board[to.ring-1][to.hour-1]==this.turn ){
 				this.sliding=to;   
@@ -262,14 +307,19 @@ import {List} from 'immutable'
 			data['from']=this.locationToNotation(this.sliding);	
     	}
         to.color=this.turn;
+        this.board[to.ring-1][to.hour-1]=to.color;
         var enemyGroup = this.getGroup(to);
+      
         var atari = this.countLiberties(enemyGroup);
+       
         if (atari===0) {
+            this.board[to.ring-1][to.hour-1]=0;
            console.log("OH HELL NO");
            return false;  
+        }else{
+    	   this.socket.post("/move",data);
+    	   return true;
         }
-    	this.socket.post("/move",data);
-    	return true;
 	},
     formatCaptured:function(killedGroup) {
         var self=this;
@@ -284,6 +334,7 @@ import {List} from 'immutable'
 	calcoffset :function(move,n,hof2) {
             var mn=move.ring+n;
             var hoffset=hof2||0; 
+            if(!hof2)hof2=0;
             if(mn<1)
             {
                 mn=1;
@@ -293,29 +344,27 @@ import {List} from 'immutable'
                 mn=6;
                 hoffset+=12;
             }
+
             if(move.ring==1&&n==-1&&hof2!=-1&&hof2!=1)hoffset+=3;      
             if(move.hour+hoffset==-1)hoffset+=12;
             if(hoffset==-1)hoffset=11; 
+
             var ring=mn;
+          //   console.log(n,ring,hof2);
+            if(n==1&&move.ring==6&&hof2==0)hoffset+=1;
             var hour=(((move.hour-1+hoffset))%12)+1;
+           // console.log(move,ring,hour);
             return  {ring:ring,hour:hour,color:Number(this.board[ring-1][hour-1])};
     },
     getAdjacent: function(move){
 
         var movesAvaibletoSlide=[];
         var movesAvaibletoSlide=[
-            this.calcoffset(move,1),     
+           this.calcoffset(move,1),     
             this.calcoffset(move,-1),
             this.calcoffset(move,1,-1),   
             this.calcoffset(move,-1,1)
         ];
-
-        
-        if(move.ring==6){
-
-           movesAvaibletoSlide= movesAvaibletoSlide.filter( i =>i.ring<6);
-        
-        }
 
         return movesAvaibletoSlide;            
     },
@@ -365,12 +414,12 @@ import {List} from 'immutable'
     },
     calculateWin: function() {
         // start with number of captures
-        var blackScore = gameState.blackCaptures;
-        var whiteScore = gameState.whiteCaptures;
+        var blackScore = this.blackscore;
+        var whiteScore = this.whitescore;
 
         // get all empty groups
         // first get all empty spaces
-        var empties =  moves.reduce(function(start,move){
+        var empties =  this.board.reduce(function(start,move){
             move.grouped=false;
             if(move.color==0)start.push(move);
 
@@ -395,7 +444,7 @@ import {List} from 'immutable'
         }
 
         // remove the grouped property entirely 
-        for (var i=0; i<moves.length; i++) {
+        for (var i=0; i<this.board.length; i++) {
             for (var j=0; j<this.board[i].length; j++) {
                 delete this.board[i].grouped;
             }
@@ -415,7 +464,6 @@ import {List} from 'immutable'
         // bob's your uncle
     },
     emanateKill : function(piece) {
-        piece.color=parseInt(piece.color);
         if(piece=='pass')return;
         piece.color=parseInt(piece.color);
         var self=this;
@@ -425,14 +473,21 @@ import {List} from 'immutable'
             touching.color=self.board[location.ring-1][location.hour-1];
             touching.ring=location.ring;
             touching.hour=location.hour;
-            if (touching.color !== piece.color) {
+           
+
+
+
+
+            if (touching.color != piece.color) {
                 var enemyGroup = self.getGroup(touching);
                 var atari = self.countLiberties(enemyGroup);
+
                 if (atari===0) {
                     killedgroup=killedgroup.concat(enemyGroup);
                 }
             }   
         });
+     
         return killedgroup;
     },
     getAdjacentLiberties : function(piece) { // takes a piece
@@ -440,7 +495,7 @@ import {List} from 'immutable'
         var emptyTargets = Array();
              var self=this;
              buddies.forEach(function(location){ 
-                            if (! self.board[location.ring-1][location.hour-1]!=0) {
+           if (! self.board[location.ring-1][location.hour-1]!=0) {
                 emptyTargets.push(location);  
                 }                       
                             });         
@@ -454,15 +509,18 @@ import {List} from 'immutable'
             for (var j=0; j<adjacencies.length; j++) {
                 var notInGroup = true;
                 for (var m=0; m<libArray.length;m++) {
-                    if (libArray[m] === adjacencies[j]) {
+                    if (JSON.stringify(libArray[m]) === JSON.stringify(adjacencies[j])) {
+                        //libArray[m] === adjacencies[j]) {
                         notInGroup = false;
                     }
                 }
+              //    console.log("lb",libArray)
                 if (notInGroup) {
                     libArray.push(adjacencies[j]);
                 }
             }
         }
+       
         if (libArray.length >=1) {
                 return libArray.length
             } else {
@@ -470,6 +528,7 @@ import {List} from 'immutable'
             }
     },
     getGroup : function (piece, group, color) {
+
         if (group === undefined) {
             var group = Array();
         } // create our container if we're at the top of the descent path

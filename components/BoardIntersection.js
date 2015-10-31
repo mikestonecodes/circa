@@ -13,7 +13,6 @@ import Validators from '../shared/Validators';
       },
       
       render: function() {
-        console.log(this.props.board.gameState);
         var classes = "intersection ";
         //start with defualt small intersection
         var r= ( 200/24 );

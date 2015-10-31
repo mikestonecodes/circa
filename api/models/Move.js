@@ -6,15 +6,16 @@ module.exports = {
     from: 'string',
     expired:'boolean',
     game:{
-    	model:'Game'
+      model:'Game'
     }  
   },
   afterCreate: function (values, cb) {
      
       var self=this;
 
-  		Game.findOne(values.game).populate('moves').exec(function (err, game) {
+      Game.findOne(values.game).populate('moves').exec(function (err, game) {
               if (err) return cb(err);
+              if(game.state=='ending')return cb();
          self.countdown=game.timer;
       clearInterval(self.timer);
 
@@ -22,6 +23,11 @@ module.exports = {
 
         self.timer=setInterval(function() { 
             self.countdown--;
+            if(game.state=='ending'){
+              self.countdown=null;
+               clearInterval(game.timer);
+               game.timer=null;
+            }
              if(self.countdown==0)
              {
               clearInterval(game.timer);
@@ -40,25 +46,33 @@ module.exports = {
               if(gamestate=='sliding')from='pass';
              
               game.moves.add({game:game.id,place:'pass',from:from,gamestate:gamestate,color:color,expired:true});
+              var allpasses=game.moves.reverse().slice(0, 3).every(function(move){
+                return move.place=='pass';
+              });
+                 if(allpasses&&color==1&&gamestate=='sliding'){
+                  game.state='ending'
+                  self.countdown=null;
+                  Game.publishUpdate(game.id, {action: 'ending'});
+                }
               game.save()
              }
              Game.publishUpdate(game.id,{  action: 'timer',timer:self.countdown});
         }, 1000);
       
   
-      		if (!game) return cb(new Error('Game not found.'));
-      		if (!values.place||!values.color) return cb(new Error('data not found.'));
+          if (!game) return cb(new Error('Game not found.'));
+          if (!values.place||!values.color) return cb(new Error('data not found.'));
       
           if(values.from)game.history+="#";
-      		  game.history+=values.place+(values.color==1?"!":"@");
-      		  if(values.from)game.history+=values.from+"$";
-      		   game.save(cb);
+            game.history+=values.place+(values.color==1?"!":"@");
+            if(values.from)game.history+=values.from+"$";
+             game.save(cb);
             if(values.expired) Game.publishAdd(game.id,"moves",values);
 
           var countdown;
          
 
-  		});
+      });
   }
 
 };

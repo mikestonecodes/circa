@@ -144,7 +144,6 @@ var BoardIntersection = _react2['default'].createClass({
   },
 
   render: function render() {
-    console.log(this.props.board.gameState);
     var classes = "intersection ";
     //start with defualt small intersection
     var r = 200 / 24;
@@ -216,7 +215,6 @@ var BoardView = _react2['default'].createClass({
             chakraRadius = width / 4;
         circles.push(_react2['default'].createElement('circle', { fill: 'rgba(0,0,0,0)', stroke: color, 'stroke-width': '2', cx: 0.5 * (height / 2.0 + chakraRadius * Math.sin(2 * Math.PI * n / 12)), cy: 0.5 * (height / 2 + chakraRadius * Math.cos(2 * Math.PI * n / 12)), r: '100' }));
       };
-      console.log(circles);
       for (var i = 0; i < 6; i++) for (var j = 0; j < 12; j++) intersections.push(_react2['default'].createElement(
         _BoardIntersection2['default'],
         {
@@ -403,19 +401,23 @@ var gameView = _react2['default'].createClass({
 
   mixins: [_reflux2['default'].connect(_sharedBoard2['default'], 'boardstore')],
   getInitialState: function getInitialState() {
-    return { boardstore: {} };
+    return { boardstore: {}, timer: 100 };
   },
   componentWillMount: function componentWillMount() {
     // When this component is loaded, fetch initial data
     _sharedBoardActions2['default'].retrieveHistory(this.props.game, this.props.user, this.props.messages);
   },
+
   begin: function begin() {
 
-    _sharedBoardActions2['default'].begin();
+    _sharedBoardActions2['default'].begin({ timer: this.state.timer });
+  },
+  ChangeTimer: function ChangeTimer(event) {
+    this.setState({ timer: event.target.value });
   },
   render: function render() {
     var gameclass = 'starting';
-    console.log(this.state.boardstore);
+    var timer = this.state.timer;
     var starting = _react2['default'].createElement(
       'div',
       { className: 'popup' },
@@ -442,7 +444,8 @@ var gameView = _react2['default'].createClass({
             'Invite URL to clipboard'
           )
         ),
-        _react2['default'].createElement('input', null),
+        'Timer:',
+        _react2['default'].createElement('input', { value: timer, onChange: this.ChangeTimer, name: 'timer' }),
         _react2['default'].createElement(
           'div',
           { className: 'popupbegin', onClick: this.begin },
@@ -450,7 +453,6 @@ var gameView = _react2['default'].createClass({
         )
       )
     );
-    console.log(this.props.game.creator, this.props.user);
     if (!this.props.user || this.props.game.creator != this.props.user.id) {
       starting = _react2['default'].createElement(
         'div',
@@ -698,7 +700,6 @@ var MoveTimeline = _react2['default'].createClass({
           place = tofrom = '';
         }
       } else if (this.props.board.gameState != 'notyourturn') {
-        console.log(this.props.board.gameState);
         place = firstmove.place;
         tofrom = "PASS";
       }
@@ -709,7 +710,6 @@ var MoveTimeline = _react2['default'].createClass({
           tofrom = moves.get(1).from + "-" + moves.get(1).place;
         }
       }
-      console.log(this.props.board.gameState);
       if (firstmove.from && moves.count() > 2 && this.props.board.gameState != 'notyourturn') {
         place = "PASS";
       }
@@ -975,9 +975,7 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
+            currentQueue[queueIndex].run();
         }
         queueIndex = -1;
         len = queue.length;
@@ -1029,6 +1027,7 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
+// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
@@ -1285,7 +1284,7 @@ var _reflux = require('reflux');
 
 var _reflux2 = _interopRequireDefault(_reflux);
 
-var BoardActions = _reflux2['default'].createActions(['retrieveHistory', 'placeStone', 'retrieveMove', 'pass', 'joinGame', 'submitChatMessage', 'begin']);
+var BoardActions = _reflux2['default'].createActions(['retrieveHistory', 'placeStone', 'retrieveMove', 'pass', 'joinGame', 'submitChatMessage', 'begin', 'end']);
 exports['default'] = BoardActions;
 module.exports = exports['default'];
 
@@ -1424,6 +1423,8 @@ var Board = _reflux2['default'].createStore({
 
         this.whitescore = 0;
         this.blackscore = 0;
+        this.blackcaptures = 0;
+        this.whitecaptures = 0;
         this.captured = [];
         this.sliding = undefined;
         this.currentUser = {};
@@ -1441,11 +1442,10 @@ var Board = _reflux2['default'].createStore({
         var countdown = 1000;
         var self = this;
     },
-    begin: function begin() {
-        console.log('a');
+    begin: function begin(options) {
         this.gameState = 'joining';
         var self = this;
-        io.socket.put('/game/' + this.gameid, { state: 'playing' }, function (resData) {
+        io.socket.put('/game/' + this.gameid, { state: 'playing', timer: options.timer }, function (resData) {
             self.triggerBoard();
         });
     },
@@ -1460,7 +1460,6 @@ var Board = _reflux2['default'].createStore({
         });
     },
     retrieveHistory: function retrieveHistory(game, user, messages) {
-        console.log(user);
 
         if (game.state == 'starting') this.gameState = 'starting';
         this.gameid = game.id;
@@ -1468,7 +1467,7 @@ var Board = _reflux2['default'].createStore({
         this.whiteUser = game.white || game.white;
         this.blackUser = game.black || game.black;
         this.socket.get('/game/' + this.gameid);
-        console.log(game);
+
         this.messages = (0, _immutable.List)(messages);
         this.set(game.history);
     },
@@ -1494,6 +1493,9 @@ var Board = _reflux2['default'].createStore({
         return m;
     },
     pass: function pass() {
+        var cv = this.consecutivePasses = this.history.slice(0, 3).every(function (move) {
+            return move.place == 'pass';
+        });
         if (this.gameState == 'notyourturn') {
             return;
         }
@@ -1501,27 +1503,60 @@ var Board = _reflux2['default'].createStore({
         if (this.gameState == 'sliding' || this.gameState == 'slide') {
             data['from'] = 'pass';
         }
-        this.socket.post("/move", data);
+        if (cv && this.turn == 1 && (this.gameState == 'sliding' || this.gameState == 'slide')) {
+            this.endGame();
+        } else {
+
+            this.socket.post("/move", data);
+        }
     },
-    end_game: function end_game() {
+    endGame: function endGame() {
+
         console.log("GAME OVER");
+        this.socket.post('/game/' + this.gameid + "/endGame/");
+    },
+    //Deletes and scores captured pieces. location is newly added piece to the board.
+    kill: function kill(board, newPiece) {
+
+        var self = this;
+        this.emanateKill(newPiece).forEach(function (kill) {
+
+            var positionColor = board[kill.ring - 1][kill.hour - 1];
+
+            // console.log(kill);
+            //  board[kill.ring-1][kill.hour-1]=2;
+            if (newPiece.color == 2 && positionColor == 1) {
+                self.blackscore++;
+                board[kill.ring - 1][kill.hour - 1] = 0;
+            } else if (newPiece.color == 1 && positionColor == 2) {
+                self.whitescore++;
+                board[kill.ring - 1][kill.hour - 1] = 0;
+            }
+        });
     },
     //adds move to move history
     add: function add(move) {
         this.history = this.history.unshift(move);
         if (move.place != 'pass') {
             var moveLocation = this.notationToLocation(move.place);
-            this.board[moveLocation.ring - 1][moveLocation.hour - 1] = move.color;
+            //this.board[moveLocation.ring-1][moveLocation.hour-1]=move.color;
             if (move.from) {
                 var fromLocation = this.notationToLocation(move.from);
                 this.board[fromLocation.ring - 1][fromLocation.hour - 1] = 0;
             }
             moveLocation.color = move.color;
             var self = this;
-            this.emanateKill(moveLocation).forEach(function (kill) {
-                self.board[kill.ring - 1][kill.hour - 1] = 0;
-                if (move.color == 2) self.blackscore++;else self.whitescore++;
-            });
+            console.log(move);
+            this.kill(this.board, moveLocation);
+            /* this.emanateKill(moveLocation).forEach(function(kill){
+                  var positionColor= self.board[kill.ring-1][kill.hour-1];
+                 if(item.color==2&&positionColor==1)self.blackscore++
+                 else if(item.color==2&&positionColor==2) self.whitescore++;
+                 self.board[kill.ring-1][kill.hour-1]=0;
+                // self.board[kill.ring-1][kill.hour-1]=0;
+                //if(move.color==2)self.blackscore++
+                //else self.whitescore++;
+             });*/
         }
         this.triggerBoard();
     },
@@ -1555,10 +1590,13 @@ var Board = _reflux2['default'].createStore({
             }
             self.board = board;
             location.color = item.color;
-            self.emanateKill(location).forEach(function (kill) {
-                board[kill.ring - 1][kill.hour - 1] = 0;
-                if (item.color == 2) self.blackscore++;else self.whitescore++;
-            });
+            self.kill(self.board, location);
+            /*self.emanateKill(location).forEach(function(kill){
+                var positionColor= board[kill.ring-1][kill.hour-1];
+                if(item.color==2&&positionColor==1)self.blackscore++
+                else if(item.color==2&&positionColor==2) self.whitescore++;
+                board[kill.ring-1][kill.hour-1]=0;
+            });*/
             return board;
         }, this.create_board());
         this.triggerBoard();
@@ -1594,7 +1632,7 @@ var Board = _reflux2['default'].createStore({
         this.socket.post('/game/' + this.gameid + "/submitChatMessage/" + msg);
     },
     update: function update(snapshot) {
-        console.log(snapshot);
+
         if (snapshot.verb == 'addedTo' && snapshot.attribute == 'moves') {
             _BoardActions2['default'].retrieveMove();
         }
@@ -1604,12 +1642,15 @@ var Board = _reflux2['default'].createStore({
         }
         if (snapshot.verb == 'updated' && snapshot.data.action == 'timer') {
             this.timer = snapshot.data.timer;
-            console.log(this.timer);
+
             this.triggerBoard();
         }
         if (snapshot.verb == 'updated' && snapshot.data.action == 'userJoined') {
             this[snapshot.data.color + 'User'] = snapshot.data.joinedUser;
             this.triggerBoard();
+        }
+        if (snapshot.verb == 'updated' && snapshot.data.action == 'ending') {
+            this.calculateWin();
         }
     },
     //this triggers a refresh and sends all the info needed for the
@@ -1632,6 +1673,7 @@ var Board = _reflux2['default'].createStore({
     },
     //place or move stone
     play: function play(to) {
+        this.consecutivePasses = 0;
         if (this.gameState == 'sliding' || this.gameState == 'slide') {
             if (this.board[to.ring - 1][to.hour - 1] == this.turn) {
                 this.sliding = to;
@@ -1648,14 +1690,19 @@ var Board = _reflux2['default'].createStore({
             data['from'] = this.locationToNotation(this.sliding);
         }
         to.color = this.turn;
+        this.board[to.ring - 1][to.hour - 1] = to.color;
         var enemyGroup = this.getGroup(to);
+
         var atari = this.countLiberties(enemyGroup);
+
         if (atari === 0) {
+            this.board[to.ring - 1][to.hour - 1] = 0;
             console.log("OH HELL NO");
             return false;
+        } else {
+            this.socket.post("/move", data);
+            return true;
         }
-        this.socket.post("/move", data);
-        return true;
     },
     formatCaptured: function formatCaptured(killedGroup) {
         var self = this;
@@ -1670,6 +1717,7 @@ var Board = _reflux2['default'].createStore({
     calcoffset: function calcoffset(move, n, hof2) {
         var mn = move.ring + n;
         var hoffset = hof2 || 0;
+        if (!hof2) hof2 = 0;
         if (mn < 1) {
             mn = 1;
             hoffset += 4;
@@ -1677,24 +1725,22 @@ var Board = _reflux2['default'].createStore({
             mn = 6;
             hoffset += 12;
         }
+
         if (move.ring == 1 && n == -1 && hof2 != -1 && hof2 != 1) hoffset += 3;
         if (move.hour + hoffset == -1) hoffset += 12;
         if (hoffset == -1) hoffset = 11;
+
         var ring = mn;
+        //   console.log(n,ring,hof2);
+        if (n == 1 && move.ring == 6 && hof2 == 0) hoffset += 1;
         var hour = (move.hour - 1 + hoffset) % 12 + 1;
+        // console.log(move,ring,hour);
         return { ring: ring, hour: hour, color: Number(this.board[ring - 1][hour - 1]) };
     },
     getAdjacent: function getAdjacent(move) {
 
         var movesAvaibletoSlide = [];
         var movesAvaibletoSlide = [this.calcoffset(move, 1), this.calcoffset(move, -1), this.calcoffset(move, 1, -1), this.calcoffset(move, -1, 1)];
-
-        if (move.ring == 6) {
-
-            movesAvaibletoSlide = movesAvaibletoSlide.filter(function (i) {
-                return i.ring < 6;
-            });
-        }
 
         return movesAvaibletoSlide;
     },
@@ -1742,12 +1788,12 @@ var Board = _reflux2['default'].createStore({
     },
     calculateWin: function calculateWin() {
         // start with number of captures
-        var blackScore = gameState.blackCaptures;
-        var whiteScore = gameState.whiteCaptures;
+        var blackScore = this.blackscore;
+        var whiteScore = this.whitescore;
 
         // get all empty groups
         // first get all empty spaces
-        var empties = moves.reduce(function (start, move) {
+        var empties = this.board.reduce(function (start, move) {
             move.grouped = false;
             if (move.color == 0) start.push(move);
 
@@ -1772,7 +1818,7 @@ var Board = _reflux2['default'].createStore({
         }
 
         // remove the grouped property entirely
-        for (var i = 0; i < moves.length; i++) {
+        for (var i = 0; i < this.board.length; i++) {
             for (var j = 0; j < this.board[i].length; j++) {
                 delete this.board[i].grouped;
             }
@@ -1793,7 +1839,6 @@ var Board = _reflux2['default'].createStore({
         // bob's your uncle
     },
     emanateKill: function emanateKill(piece) {
-        piece.color = parseInt(piece.color);
         if (piece == 'pass') return;
         piece.color = parseInt(piece.color);
         var self = this;
@@ -1803,14 +1848,17 @@ var Board = _reflux2['default'].createStore({
             touching.color = self.board[location.ring - 1][location.hour - 1];
             touching.ring = location.ring;
             touching.hour = location.hour;
-            if (touching.color !== piece.color) {
+
+            if (touching.color != piece.color) {
                 var enemyGroup = self.getGroup(touching);
                 var atari = self.countLiberties(enemyGroup);
+
                 if (atari === 0) {
                     killedgroup = killedgroup.concat(enemyGroup);
                 }
             }
         });
+
         return killedgroup;
     },
     getAdjacentLiberties: function getAdjacentLiberties(piece) {
@@ -1833,15 +1881,18 @@ var Board = _reflux2['default'].createStore({
             for (var j = 0; j < adjacencies.length; j++) {
                 var notInGroup = true;
                 for (var m = 0; m < libArray.length; m++) {
-                    if (libArray[m] === adjacencies[j]) {
+                    if (JSON.stringify(libArray[m]) === JSON.stringify(adjacencies[j])) {
+                        //libArray[m] === adjacencies[j]) {
                         notInGroup = false;
                     }
                 }
+                //    console.log("lb",libArray)
                 if (notInGroup) {
                     libArray.push(adjacencies[j]);
                 }
             }
         }
+
         if (libArray.length >= 1) {
             return libArray.length;
         } else {
@@ -1849,6 +1900,7 @@ var Board = _reflux2['default'].createStore({
         }
     },
     getGroup: function getGroup(piece, group, color) {
+
         if (group === undefined) {
             var group = Array();
         } // create our container if we're at the top of the descent path

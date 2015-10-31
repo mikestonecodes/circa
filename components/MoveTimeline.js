@@ -47,7 +47,6 @@ const MoveTimeline = React.createClass({
            place=tofrom='';
         }
        }else if(this.props.board.gameState!='notyourturn'){
-        console.log(this.props.board.gameState);
         place=firstmove.place;
         tofrom="PASS";
       }
@@ -60,7 +59,6 @@ const MoveTimeline = React.createClass({
             tofrom=moves.get(1).from+"-"+moves.get(1).place;
           }
         }
-        console.log(this.props.board.gameState);
          if(firstmove.from&&moves.count()>2 && this.props.board.gameState!='notyourturn')
         {
            place="PASS";

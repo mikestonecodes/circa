@@ -47,6 +47,24 @@ module.exports = {
     res.redirect("/login");
   }
   },
+  endGame: function(req,res)
+  {
+    Game.findOne(req.params.id).exec(function afterwards(err,game){
+      if(err){
+        return res.json(err);
+      }
+      if(!req.user){   
+        return res.json({error:"Not logged in"});
+      }
+      game.state='ending'
+      Game.publishUpdate(req.params.id, {
+        user:req.user,
+        action: 'ending'
+      });
+      game.save();
+      return res.json(game);
+    });
+  },
   submitChatMessage: function(req,res)
   {
     console.log(req.params.message);

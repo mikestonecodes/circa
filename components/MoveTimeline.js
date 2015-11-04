@@ -5,7 +5,7 @@ import Reflux from 'reflux';
 import {Seq,List} from 'immutable';
 import BoardActions from '../shared/BoardActions';
 const MoveTimeline = React.createClass({
-  
+  getInitialState: function(){return {toggleAllHistory: false};},
   filterMoves:function(color)
   {
     if(!this.props.board.history||this.props.board.history.count()<1)return '';
@@ -15,6 +15,7 @@ const MoveTimeline = React.createClass({
     var turnoffset=Seq([[2,2],[2,1],[1,1],[1,2]]).findIndex( e=> e.toString()===[firstmovecolor,currentcolor].toString())+1;    
     var paired=moves.toSeq().skip(turnoffset).filter(move => move.color==color).groupBy( (n,i) => Math.floor(i/2));
     if(moves.count()<5)return;
+    console.log(this.state.toggleAllhistory);
     return paired.map( function(pairedmoves,index){
       if(pairedmoves.count()==2){ 
         return (
@@ -24,7 +25,7 @@ const MoveTimeline = React.createClass({
           </div>
         ); 
       }
-      }).toArray().slice(0,3);
+      }).toArray().slice(0,this.state.toggleAllhistory?9001:3);
   },
   handleClick: function(event)
   {
@@ -82,6 +83,11 @@ const MoveTimeline = React.createClass({
   joinWhiteGame : function(color){
     BoardActions.joinGame('white');
   },
+  showAll: function()
+  {
+    console.log("yo");
+    this.setState({toggleAllhistory: !this.state.toggleAllHistory});
+  },
   joinBlackGame : function(color){
     BoardActions.joinGame('black');
   },
@@ -111,6 +117,7 @@ const MoveTimeline = React.createClass({
             <div className='bigpiece blackdisplay'> </div>
            <div className='previousmovesright'>{this.filterMoves(2)}</div>
         </div>
+        <button className='showall' onClick={this.showAll}>show All History</button>
      </div>
     )
   }

@@ -27,7 +27,16 @@ import Validators from '../shared/Validators';
             r=0;
           }   
         }
-
+        if(this.props.color==3)
+        {
+          r= ( 200/24 );
+          classes = 'intersection white';
+        }
+        if(this.props.color==4)
+        {
+          r= ( 200/24 );
+          classes = 'intersection black';
+        }
         //Make big if sliding
         if(this.props.board.gameState!='notyourturn' &&
            this.props.board.sliding&&this.props.board.sliding.ring==this.props.ring && 

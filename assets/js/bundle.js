@@ -158,7 +158,14 @@ var BoardIntersection = _react2['default'].createClass({
         r = 0;
       }
     }
-
+    if (this.props.color == 3) {
+      r = 200 / 24;
+      classes = 'intersection white';
+    }
+    if (this.props.color == 4) {
+      r = 200 / 24;
+      classes = 'intersection black';
+    }
     //Make big if sliding
     if (this.props.board.gameState != 'notyourturn' && this.props.board.sliding && this.props.board.sliding.ring == this.props.ring && this.props.board.sliding.hour == this.props.hour) {
       r = 200 / 8;
@@ -646,6 +653,9 @@ var _sharedBoardActions2 = _interopRequireDefault(_sharedBoardActions);
 var MoveTimeline = _react2['default'].createClass({
   displayName: 'MoveTimeline',
 
+  getInitialState: function getInitialState() {
+    return { toggleAllHistory: false };
+  },
   filterMoves: function filterMoves(color) {
     if (!this.props.board.history || this.props.board.history.count() < 1) return '';
     var moves = this.props.board.history;
@@ -660,6 +670,7 @@ var MoveTimeline = _react2['default'].createClass({
       return Math.floor(i / 2);
     });
     if (moves.count() < 5) return;
+    console.log(this.state.toggleAllhistory);
     return paired.map(function (pairedmoves, index) {
       if (pairedmoves.count() == 2) {
         return _react2['default'].createElement(
@@ -680,7 +691,7 @@ var MoveTimeline = _react2['default'].createClass({
           )
         );
       }
-    }).toArray().slice(0, 3);
+    }).toArray().slice(0, this.state.toggleAllhistory ? 9001 : 3);
   },
   handleClick: function handleClick(event) {
     if (event.target.innerHTML == 'PASS') {
@@ -739,6 +750,10 @@ var MoveTimeline = _react2['default'].createClass({
   },
   joinWhiteGame: function joinWhiteGame(color) {
     _sharedBoardActions2['default'].joinGame('white');
+  },
+  showAll: function showAll() {
+    console.log("yo");
+    this.setState({ toggleAllhistory: !this.state.toggleAllHistory });
   },
   joinBlackGame: function joinBlackGame(color) {
     _sharedBoardActions2['default'].joinGame('black');
@@ -812,6 +827,11 @@ var MoveTimeline = _react2['default'].createClass({
           { className: 'previousmovesright' },
           this.filterMoves(2)
         )
+      ),
+      _react2['default'].createElement(
+        'button',
+        { className: 'showall', onClick: this.showAll },
+        'show All History'
       )
     );
   }
@@ -1577,6 +1597,7 @@ var Board = _reflux2['default'].createStore({
             moves.unshift(move_data);
         }
         this.history = (0, _immutable.List)(moves);
+        if (this.history.length != 0) this.turn = this.history.first().color;
         var self = this;
         this.board = this.history.reverse().reduce(function (board, item) {
             if (item.place == 'pass') return board;
@@ -1590,6 +1611,7 @@ var Board = _reflux2['default'].createStore({
             }
             self.board = board;
             location.color = item.color;
+
             self.kill(self.board, location);
             /*self.emanateKill(location).forEach(function(kill){
                 var positionColor= board[kill.ring-1][kill.hour-1];
@@ -1748,19 +1770,25 @@ var Board = _reflux2['default'].createStore({
         if (group === undefined) {
             var group = [[], [], []];
         } // create our container if we're at the top of the descent path
-        if (target.color === undefined && target.ring) target += this.board[target.ring - 1][target.hour - 1];
+        if (target.color == undefined || target.ring > 6) {
+            console.log('eh');
+            target = { ring: target.ring - 1, hour: target.hour - 1, color: this.board[target.ring - 1][target.hour - 1] };
+        }
         if (target.color == 0) {
             group[0].push(target); // add the target in question.
             var buddies = this.getAdjacent(target);
-            buddies.forEach(function (location) {
+            var self = this;
+            buddies.forEach(function (location, i) {
                 var notInGroup = true;
                 for (var j = 0; j < group[0].length; j++) {
-                    if (buddies[i] === group[0][j]) {
+                    // console.log(location,group[0][j]);
+                    if (location.ring === group[0][j].ring && location.hour === group[0][j].hour) {
+
                         notInGroup = false;
                     }
                 }
                 if (notInGroup === true) {
-                    this.getEmptyGroup(location, group);
+                    self.getEmptyGroup(location, group);
                 }
             });
         } else if (target.color === 2) {
@@ -1791,51 +1819,68 @@ var Board = _reflux2['default'].createStore({
         var blackScore = this.blackscore;
         var whiteScore = this.whitescore;
 
-        // get all empty groups
-        // first get all empty spaces
-        var empties = this.board.reduce(function (start, move) {
-            move.grouped = false;
-            if (move.color == 0) start.push(move);
-
-            return move;
-        }, []);;
-
         var groups = Array();
+        var empties = Array();
+        for (var i = 0; i < this.board.length; i++) {
+            for (var j = 0; j < this.board[i].length; j++) {
+                if (this.board[i][j] === 0) {
+                    empties.push({ ring: i, hour: j, color: this.board[i][j] });
+                    empties[empties.length - 1].grouped = false;
+                }
+            }
+        }
 
         // take each empty space, get the group it's in
         for (var i = 0; i < empties.length; i++) {
             if (!empties[i].grouped) {
                 groups.push(this.getEmptyGroup(empties[i]));
+                var empscg = true;
                 for (j = 0; j < groups[groups.length - 1][0].length; j++) {
                     // subtract all empty spaces in that group from consideration
+
                     for (var m = 0; m < empties.length; m++) {
                         if (groups[groups.length - 1][0][j] === empties[m]) {
+                            console.log('yo');
+
                             empties[m].grouped = true;
                         }
                     }
                 }
             }
         }
+        console.log(groups);
 
-        // remove the grouped property entirely
-        for (var i = 0; i < this.board.length; i++) {
-            for (var j = 0; j < this.board[i].length; j++) {
-                delete this.board[i].grouped;
-            }
-        }
+        //TODO: find bug that causes this
 
         // determine which ones are territory and add to total
+        var self = this;
         for (var i = 0; i < groups.length; i++) {
             if (groups[i][1].length > 1 && groups[i][2].length === 0) {
                 //black group
-                blackScore += groups[i][0].length;
+
+                groups[i][0].forEach(function (loc) {
+                    if (self.board[loc.ring - 1][loc.hour - 1] == 0) {
+                        self.board[loc.ring - 1][loc.hour - 1] = 4;
+                        blackScore++;
+                    }
+                });
+                console.log(groups[i][0]);
             } else if (groups[i][2].length > 1 && groups[i][1].length === 0) {
-                whiteScore += groups[i][0].length;
+                //whiteScore += groups[i][0].length;
+                groups[i][0].forEach(function (loc) {
+                    if (self.board[loc.ring - 1][loc.hour - 1] == 0) {
+                        self.board[loc.ring - 1][loc.hour - 1] = 3;
+                        whiteScore++;
+                    }
+                });
+                console.log(groups[i][0]);
             }
         }
+        this.triggerBoard();
         console.log("black score is: " + blackScore);
         console.log("white score is: " + whiteScore);
-        alert("Black Score is: " + blackScore + '\n' + "White Score is: " + whiteScore);
+
+        // alert("Black Score is: " + blackScore + '\n' + "White Score is: " + whiteScore);
         // bob's your uncle
     },
     emanateKill: function emanateKill(piece) {

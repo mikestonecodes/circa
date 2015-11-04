@@ -3,10 +3,19 @@
     width: 250px;
        margin-right: 15px;
     margin-top: 30px;
-    height: 400px;
-    overflow: auto;
+    margin-bottom: 20px;
 }
+button
+{
+  border-style: solid;
+  background-color: none;
 
+}
+.showall{
+  margin:0 auto;
+    display:block;
+    margin-top: 10px;
+}
 .whitedisplay {
   float: right;
   background: white; }

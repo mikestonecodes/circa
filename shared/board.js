@@ -13,9 +13,7 @@ import {List} from 'immutable'
 		},
 	   	init : function(){
 	    this.turn =this.colors.BLACK;
-	    //a 2D array representing all the stones currently on the board. board[ring][hour]
-	    //0th index is ring 1, the most inner ring. index 6 the most outer ring. 0th hour is 1 oclock, 11 is 12 oclock
-
+	   
 	    this.whitescore=0;
         this.blackscore=0;
         this.blackcaptures=0;
@@ -28,7 +26,8 @@ import {List} from 'immutable'
 	    this.gameid=-1;
     	this.onChanges = [];
         this.whiteSocket='';
-        
+        this.blackAcceptScore=false;
+        this.whiteAcceptScore=false;
         this.blackSocket='';    
     	this.socket = new Transport();
     	this.moves = []; 
@@ -37,6 +36,7 @@ import {List} from 'immutable'
         var countdown=1000;
         var self=this;
 	},
+    
     begin:function(options)
     {         
         this.gameState='joining';
@@ -59,16 +59,20 @@ import {List} from 'immutable'
 	},
 	retrieveHistory:function(game,user,messages)
 	{
-        
-        if(game.state=='starting') this.gameState= 'starting';
-    	this.gameid=game.id;
+        if(game.state=='starting'||game.state=='ending') this.gameState= game.state;
+        this.gameid=game.id;
         this.currentUser=user;
         this.whiteUser=game.white || game.white;
         this.blackUser=game.black || game.black;
     	this.socket.get('/game/'+this.gameid);	
-      
+       
         this.messages=List(messages);
      	this.set(game.history);
+
+        if(game.state=='ending'||game.state=='final')
+        {
+            this.fillTerritories([game.blackTerritories,game.whiteTerritories]);
+        }
 	},
 	locationToNotation:function(location)
     {
@@ -107,27 +111,20 @@ import {List} from 'immutable'
         if(cv && this.turn==1&&(this.gameState=='sliding'||this.gameState=='slide')) {
             this.endGame();
         } else {
-           
     	   this.socket.post("/move",data);
         }
 	},
 	endGame: function() {
 
 	    console.log("GAME OVER");
-        this.socket.post('/game/'+this.gameid+"/endGame/")
-        
+        this.socket.post('/game/'+this.gameid+"/endGame/")     
 	},
     //Deletes and scores captured pieces. location is newly added piece to the board.
     kill: function(board,newPiece)
     {
-
         var self=this;
-        this.emanateKill(newPiece).forEach(function(kill){
-           
+        this.emanateKill(newPiece).forEach(function(kill){      
                 var positionColor= board[kill.ring-1][kill.hour-1];
-            
-               // console.log(kill);
-             //  board[kill.ring-1][kill.hour-1]=2;
                 if(newPiece.color==2&&positionColor==1){
                     self.blackscore++
                     board[kill.ring-1][kill.hour-1]=0;
@@ -136,7 +133,6 @@ import {List} from 'immutable'
                     self.whitescore++;
                     board[kill.ring-1][kill.hour-1]=0;
                 }
-                
             });
     },
 	//adds move to move history
@@ -144,8 +140,8 @@ import {List} from 'immutable'
 	{
 		this.history=this.history.unshift(move);
         if(move.place!='pass'){
-            var moveLocation=this.notationToLocation(move.place);
-           //this.board[moveLocation.ring-1][moveLocation.hour-1]=move.color;
+          var moveLocation=this.notationToLocation(move.place);
+           this.board[moveLocation.ring-1][moveLocation.hour-1]=move.color;
             if(move.from){
                 var fromLocation=this.notationToLocation(move.from);
                 this.board[fromLocation.ring-1][fromLocation.hour-1]=0;
@@ -168,6 +164,9 @@ import {List} from 'immutable'
         }
         this.triggerBoard();
 	},
+
+    //
+
 	//populates the board array based on move history string from server
 	set: function(history)
 	{
@@ -187,7 +186,7 @@ import {List} from 'immutable'
 			moves.unshift(move_data);
 		}
         this.history=List(moves);	
-        if(this.history.length!=0)this.turn=this.history.first().color;
+        if(this.history.size!=0)this.turn=this.history.first().color;
         var self=this; 
         this.board=this.history.reverse().reduce(function(board,item){
         if(item.place=='pass')return board;
@@ -216,7 +215,7 @@ import {List} from 'immutable'
 	//move the game along based off lastest move recieved from server
 	updategameState: function()
 	{
-        if(this.gameState=='starting')return;
+        if(this.gameState=='starting'||this.gameState=='ending'||this.gameState=='final')return;
         var lastmove=this.history.get(0) || this.history.count()>0;
         var nextcolor=2;
         if(lastmove){
@@ -243,6 +242,10 @@ import {List} from 'immutable'
             this.sliding=undefined;
         }
 	},
+    acceptScore:function()
+    {
+        this.socket.post('/game/'+this.gameid+"/acceptScore/");
+    },
     submitChatMessage:function(msg)
     {
         this.socket.post('/game/'+this.gameid+"/submitChatMessage/"+msg)
@@ -268,9 +271,68 @@ import {List} from 'immutable'
         }
         if(snapshot.verb=='updated'&&snapshot.data.action=='ending')
         {
-            this.calculateWin();
+           
+            console.log(snapshot.data);
+            var self=this;
+            this.gameState='ending';
+            this.fillTerritories(snapshot.data.Territories);
+            //BoardActions.confirmTerritories();   
+
+            //this.socket.post("/move",data);
+        }
+   
+        if(snapshot.verb=='updated'&&snapshot.data.action=='updateTerritories')
+        {
+             this.fillTerritories([snapshot.data.blackTerritories,snapshot.data.whiteTerritories]);
+        }
+
+        if(snapshot.verb=='updated'&&snapshot.data.action=='acceptScore')
+        {
+            this.gameState=snapshot.data.state;
+
+            if(snapshot.data.blackAcceptScore)this.blackAcceptScore=true;
+            if(snapshot.data.whiteAcceptScore)this.whiteAcceptScore=true;
+            this.triggerBoard();
+
         }
 	},
+    clearTerritories:function()
+    {
+        for (var i=0; i<this.board.length; i++) {
+            for (var j=0; j<this.board[i].length; j++) {
+                if (this.board[i][j] === 3 || this.board[i][j] === 4) {
+                   this.board[i][j]=0;
+                }
+               
+        }
+    }
+    },
+    fillTerritories:function(fillTerritories)
+    {
+        var self=this;
+        console.log(fillTerritories);
+        if(!fillTerritories)return;
+        this.clearTerritories();
+
+        this.blackscore=this.blackcaptures;
+        this.whitescore=this.whitecaptures;
+        fillTerritories.forEach(function(terrorityGroup,color){
+             console.log(terrorityGroup);
+               if(!terrorityGroup)return;
+                terrorityGroup.substring(1).split("!").forEach(function(locnotation){
+                    var loc=self.notationToLocation(locnotation);
+                    console.log(loc);
+                    if(loc.ring&&loc.hour){
+                         console.log(color);
+                        if(color==0)self.board[loc.ring-1][loc.hour-1]=4;
+                        if(color==1)self.board[loc.ring-1][loc.hour-1]=3;
+                        if(color==0)self.blackscore++;
+                        else if(color==1)self.whitescore++;
+                     }
+                })
+            });
+        this.triggerBoard();
+    },
 	//this triggers a refresh and sends all the info needed for the 
     //boardview and any other react elements listening.
 	triggerBoard: function()
@@ -285,6 +347,8 @@ import {List} from 'immutable'
             whitescore:this.whitescore,
             blackscore:this.blackscore,
             blackUser:this.blackUser,
+            blackAcceptScore:this.blackAcceptScore,
+            whiteAcceptScore:this.whiteAcceptScore,
             whiteUser:this.whiteUser,
             messages:this.messages,
             timer:this.timer
@@ -292,6 +356,21 @@ import {List} from 'immutable'
 	},
 	//place or move stone 
 	play:  function(to) {
+        console.log(this.gameState);
+        if(this.gameState=='ending'&&this.board[to.ring-1][to.hour-1] !=1&&this.board[to.ring-1][to.hour-1] !=2)
+        {
+            if(this.board[to.ring-1][to.hour-1]==0)
+            {
+                this.board[to.ring-1][to.hour-1]=2;
+            }
+            this.board[to.ring-1][to.hour-1]++;
+            if(this.board[to.ring-1][to.hour-1]==5)this.board[to.ring-1][to.hour-1]=0;
+            var result=this.calculateScore();
+            console.log('/game/'+this.gameid+"/updateTerritories/"+result[0]+"/"+result[1]);
+            this.socket.post('/game/'+this.gameid+"/updateTerritories/"+result[0]+"/"+result[1]);     
+            this.triggerBoard();
+            return true;
+        }
         this.consecutivePasses=0;
 		if(this.gameState == 'sliding' || this.gameState == 'slide' ){
 			if(this.board[to.ring-1][to.hour-1]==this.turn ){
@@ -370,13 +449,39 @@ import {List} from 'immutable'
 
         return movesAvaibletoSlide;            
     },
+    calculateScore:function()
+    {
+        this.blackscore=this.blackcaptures;
+        this.whitescore=this.whitecaptures;
+        var blackTerritories='@';
+        var whiteTerritories='@';
+        for (var i=0; i<this.board.length; i++) {
+            for (var j=0; j<this.board[i].length; j++) {
+                if (this.board[i][j] === 3) {
+                    this.whitescore++;
+                    whiteTerritories+=this.locationToNotation({ring:i+1,hour:j+1})+"!";
+                }
+                if (this.board[i][j] === 4) {
+                    this.blackscore++;
+                    blackTerritories+=this.locationToNotation({ring:i+1,hour:j+1})+"!";
+                }
+        }
+    }
+        if(blackTerritories.length!=1){
+            blackTerritories=blackTerritories.slice(0, - 1);
+        }
+         if(whiteTerritories.length!=1){
+            whiteTerritories=whiteTerritories.slice(0, - 1);
+        }
+        return [blackTerritories,whiteTerritories];
+    },
 	getEmptyGroup : function (target, group) {
         if (group === undefined) {
             var group = [[],[],[]];
         } // create our container if we're at the top of the descent path
         if(target.color==undefined||target.ring>6){
             console.log('eh');
-            target= {ring:target.ring-1,hour:target.hour-1,color:this.board[target.ring-1][target.hour-1]};
+           // target= {ring:target.ring-1,hour:target.hour-1,color:this.board[target.ring-1][target.hour-1]};
         }
         if (target.color==0) {
             group[0].push(target); // add the target in question.
@@ -460,14 +565,17 @@ import {List} from 'immutable'
         //TODO: find bug that causes this
        
         // determine which ones are territory and add to total
+        var blackTerritories='@';
+        var whiteTerritories='@';
         var self=this;
         for (var i=0; i< groups.length; i++) {
             if (groups[i][1].length>1 && groups[i][2].length===0) { //black group
                 
                 groups[i][0].forEach(function(loc){
                     if( self.board[loc.ring-1][loc.hour-1]==0){
-                        self.board[loc.ring-1][loc.hour-1]=4;
+                      //  self.board[loc.ring-1][loc.hour-1]=4;
                         blackScore++;
+                        blackTerritories+=self.locationToNotation(loc)+"!";
                     }
                     
                 });
@@ -476,8 +584,9 @@ import {List} from 'immutable'
                 //whiteScore += groups[i][0].length;
                  groups[i][0].forEach(function(loc){
                      if( self.board[loc.ring-1][loc.hour-1]==0){
-                        self.board[loc.ring-1][loc.hour-1]=3;
+                       // self.board[loc.ring-1][loc.hour-1]=3;
                         whiteScore++;
+                        whiteTerritories+=self.locationToNotation(loc)+"!";
                     }
                 });
                 console.log(groups[i][0]);
@@ -487,7 +596,7 @@ import {List} from 'immutable'
         this.triggerBoard();
         console.log("black score is: " + blackScore);
         console.log("white score is: " + whiteScore);
-       
+        return [blackTerritories.slice(0, - 1),whiteTerritories.slice(0, - 1)];
 
        // alert("Black Score is: " + blackScore + '\n' + "White Score is: " + whiteScore);
         // bob's your uncle

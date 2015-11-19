@@ -49,6 +49,11 @@ module.exports = {
   },
   endGame: function(req,res)
   {
+   Game.endGame(req.params);
+  },
+  updateTerritories: function(req,res)
+  {
+    console.log('updatet');
     Game.findOne(req.params.id).exec(function afterwards(err,game){
       if(err){
         return res.json(err);
@@ -56,14 +61,47 @@ module.exports = {
       if(!req.user){   
         return res.json({error:"Not logged in"});
       }
-      game.state='ending'
+      game.blackTerritories=req.params.blackTerritories;
+      game.whiteTerritories=req.params.whiteTerritories;
+      console.log(req.params.blackTerritories);
+      console.log(req.params.whiteTerritories);
       Game.publishUpdate(req.params.id, {
         user:req.user,
-        action: 'ending'
+        blackTerritories:req.params.blackTerritories,
+        whiteTerritories:req.params.whiteTerritories,
+        action: 'updateTerritories'
       });
       game.save();
       return res.json(game);
     });
+  },
+  acceptScore:function(req,res)
+  {
+    Game.findOne(req.params.id).exec(function afterwards(err,game){
+      if(err){
+        return res.json(err);
+      }
+      if(!req.user){   
+        return res.json({error:"Not logged in"});
+      }
+
+      if(req.user.id==game.black)game.blackAcceptScore=true;
+      if(req.user.id==game.white)game.whiteAcceptScore=true;
+      if(game.blackAcceptScore==true&&game.whiteAcceptScore==true)
+      {
+        game.state='final';
+      }
+      Game.publishUpdate(req.params.id, {
+        user:req.user,
+        state:game.state,
+        blackAcceptScore:game.blackAcceptScore,
+        whiteAcceptScore:game.whiteAcceptScore,
+        action: 'acceptScore'
+      });
+      game.save();
+      return res.json(game);
+    });
+
   },
   submitChatMessage: function(req,res)
   {

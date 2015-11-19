@@ -1,3 +1,4 @@
+
 module.exports = {
 
   attributes: {
@@ -50,9 +51,11 @@ module.exports = {
                 return move.place=='pass';
               });
                  if(allpasses&&color==1&&gamestate=='sliding'){
-                  game.state='ending'
+                  
                   self.countdown=null;
-                  Game.publishUpdate(game.id, {action: 'ending'});
+                  /*
+                  Game.publishUpdate(game.id, {action: 'ending',terroritories:result});*/
+                  Game.publishEndGame(game);
                 }
               game.save()
              }

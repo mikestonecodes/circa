@@ -232,6 +232,10 @@ h2
 {
 	fill-opacity:0.5;
 }
+.emptyTerrority
+{
+  fill-opacity:0.5;
+}
 .empty:hover
 {
 	fill-opacity:1;

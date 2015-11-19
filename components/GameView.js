@@ -50,7 +50,7 @@ import ReactZeroClipboard from 'react-zeroclipboard';
                     {starting}
                     <div id='game' className={gameclass}>
                       <aside id='leftside'>
-                      <MoveTimeline  board={this.state.boardstore} />
+                      <MoveTimeline user={this.props.user} board={this.state.boardstore} />
                      <ChatView board={this.state.boardstore} />
                       </aside>
                      <BoardView  board={this.state.boardstore} />

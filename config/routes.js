@@ -43,6 +43,8 @@ module.exports.routes = {
 'post /game/:id/join/:color': 'GameController.join',
 'post /game/:id/endGame': 'GameController.endGame',
 'post /game/:id/submitChatMessage/:message': 'GameController.submitChatMessage',
+'post /game/:id/updateTerritories/:blackTerritories/:whiteTerritories': 'GameController.updateTerritories',
+ 'post /game/:id/acceptScore': 'GameController.acceptScore',
   '/': {
     view: 'homepage'
   },

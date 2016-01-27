@@ -41,8 +41,8 @@ import {List} from 'immutable'
     {         
         this.gameState='joining';
         var self=this;
-        io.socket.put('/game/'+this.gameid, { state: 'playing',timer:options.timer }, function (resData) {
-             self.triggerBoard();
+        io.socket.put('/game/'+this.gameid, { state: 'playing',timer:options.timer }, function (resData) {      
+                 self.triggerBoard();
         });  
     },
     joinGame: function(color)
@@ -54,6 +54,7 @@ import {List} from 'immutable'
 		var self=this;
 		this.socket.get('/game/'+this.gameid+"/moves?sort=createdAt%20DESC&limit=1", function (moves) {
     		//sets the board array based on move history
+
     		self.add(moves[0]);	
       });
 	},
@@ -138,9 +139,13 @@ import {List} from 'immutable'
 	//adds move to move history
 	add : function(move)
 	{
-		this.history=this.history.unshift(move);
+      this.history=this.history.unshift(move);
         if(move.place!='pass'){
+<<<<<<< Updated upstream
           var moveLocation=this.notationToLocation(move.place);
+=======
+            var moveLocation=this.notationToLocation(move.place);
+>>>>>>> Stashed changes
            this.board[moveLocation.ring-1][moveLocation.hour-1]=move.color;
             if(move.from){
                 var fromLocation=this.notationToLocation(move.from);
@@ -150,23 +155,15 @@ import {List} from 'immutable'
             var self=this;
             console.log(move);
             this.kill(this.board,moveLocation);
-           /* this.emanateKill(moveLocation).forEach(function(kill){
-
-                var positionColor= self.board[kill.ring-1][kill.hour-1];
-                if(item.color==2&&positionColor==1)self.blackscore++
-                else if(item.color==2&&positionColor==2) self.whitescore++;
-                self.board[kill.ring-1][kill.hour-1]=0;
-
-              // self.board[kill.ring-1][kill.hour-1]=0;
-               //if(move.color==2)self.blackscore++
-               //else self.whitescore++;
-            });*/
         }
         this.triggerBoard();
 	},
 
+<<<<<<< Updated upstream
     //
 
+=======
+>>>>>>> Stashed changes
 	//populates the board array based on move history string from server
 	set: function(history)
 	{
@@ -214,8 +211,13 @@ import {List} from 'immutable'
 	},
 	//move the game along based off lastest move recieved from server
 	updategameState: function()
+<<<<<<< Updated upstream
 	{
         if(this.gameState=='starting'||this.gameState=='ending'||this.gameState=='final')return;
+=======
+    {
+        if(this.gameState=='starting')return;
+>>>>>>> Stashed changes
         var lastmove=this.history.get(0) || this.history.count()>0;
         var nextcolor=2;
         if(lastmove){
@@ -227,13 +229,13 @@ import {List} from 'immutable'
             ((nextcolor==1&&this.whiteUser.id==this.currentUser.id ) ||
              (nextcolor==2&&this.blackUser.id==this.currentUser.id ) )) {     
             if(lastmove){
-        		if(lastmove.from) {
-        			this.gameState='place';
-        			this.turn = nextcolor = lastmove.color==1 ? 2 : 1;
-        	        this.sliding=undefined;
-        		}else if(this.gameState!='slide') {
-        			this.gameState='sliding';
-        		}
+                if(lastmove.from) {
+                    this.gameState='place';
+                    this.turn = nextcolor = lastmove.color==1 ? 2 : 1;
+                    this.sliding=undefined;
+                }else if(this.gameState!='slide') {
+                    this.gameState='sliding';
+                }
             }else{
                this.gameState='place';
             }
@@ -241,10 +243,20 @@ import {List} from 'immutable'
             this.gameState='notyourturn';
             this.sliding=undefined;
         }
+<<<<<<< Updated upstream
 	},
     acceptScore:function()
     {
         this.socket.post('/game/'+this.gameid+"/acceptScore/");
+=======
+    },
+
+    playMove:function(play)
+    {
+
+        console.log("PLAY THIS SON",play);
+       // this.add(play);
+>>>>>>> Stashed changes
     },
     submitChatMessage:function(msg)
     {
@@ -253,8 +265,8 @@ import {List} from 'immutable'
 	update: function(snapshot)
 	{
         
-        if(snapshot.verb=='addedTo'&&snapshot.attribute=='moves') {
-		  BoardActions.retrieveMove();
+       if(snapshot.verb=='addedTo'&&snapshot.attribute=='moves') {
+          BoardActions.retrieveMove();
         }
          if(snapshot.verb=='updated'&&snapshot.data.action=='chatMessageSubmited'){
            this.messages=this.messages.push(snapshot.data);
@@ -356,6 +368,7 @@ import {List} from 'immutable'
 	},
 	//place or move stone 
 	play:  function(to) {
+<<<<<<< Updated upstream
         console.log(this.gameState);
         if(this.gameState=='ending'&&this.board[to.ring-1][to.hour-1] !=1&&this.board[to.ring-1][to.hour-1] !=2)
         {
@@ -376,17 +389,25 @@ import {List} from 'immutable'
 			if(this.board[to.ring-1][to.hour-1]==this.turn ){
 				this.sliding=to;   
 				this.gameState = 'slide';
+=======
+        
+         this.consecutivePasses=0;
+        if(this.gameState == 'sliding' || this.gameState == 'slide' ){
+            if(this.board[to.ring-1][to.hour-1]==this.turn ){
+                this.sliding=to;   
+                this.gameState = 'slide';
+>>>>>>> Stashed changes
                 this.triggerBoard();
                 return true;
-			}
-		}
-		if (this.board[to.ring-1][to.hour-1] != this.colors.EMPTY) {
-	        return false;
-		}
-		var data= {game:this.gameid,place:this.locationToNotation(to),color:this.turn,gameState:this.gameState} ;
-	    if(this.sliding) {
-			data['from']=this.locationToNotation(this.sliding);	
-    	}
+            }
+        }
+        if (this.board[to.ring-1][to.hour-1] != this.colors.EMPTY) {
+            return false;
+        }
+        var data= {game:this.gameid,place:this.locationToNotation(to),color:this.turn,gameState:this.gameState} ;
+        if(this.sliding) {
+            data['from']=this.locationToNotation(this.sliding); 
+        }
         to.color=this.turn;
         this.board[to.ring-1][to.hour-1]=to.color;
         var enemyGroup = this.getGroup(to);
@@ -398,9 +419,12 @@ import {List} from 'immutable'
            console.log("OH HELL NO");
            return false;  
         }else{
-    	   this.socket.post("/move",data);
-    	   return true;
+           this.socket.post("/move",data);
+           return true;
         }
+
+        
+
 	},
     formatCaptured:function(killedGroup) {
         var self=this;

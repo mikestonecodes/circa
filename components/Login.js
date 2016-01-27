@@ -3,20 +3,21 @@ import React from 'react';
 
 import Layout from './Layout';
 
-    const Login = React.createClass({
-      render: function() {
+      export default class Login extends React.Component  {
+      render(){
           return (
-            <Layout user={this.props.user}>
+            <div className='login booyah-box col-xs-6 col-xs-offset-3'>
+            <h2>Sign in</h2><br/>
              { this.props.errors}
                  <form role="form" action="/auth/local" method="post">
-  					<input type="text" name="identifier" placeholder="Username or Email" />
-					  <input type="password" name="password" placeholder="Password"/>
+  					<input type="text" name="identifier" placeholder="Username or Email" />  <br/>
+
+					  <input type="password" name="password" placeholder="Password"/> <br/>
 					  <button type="submit">Sign in</button>
 </form>
-           </Layout>
+           </div>
           )
       }
-  });
-  export default Login;
+  }
 
 

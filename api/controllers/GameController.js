@@ -1,21 +1,35 @@
-var routes = require('../../components/routes.js');
+import routes from '../../components/routes' 
 
 module.exports = {
   show : function(req, res) {
   			 Game.findOne(req.params.id).populate('white').populate('black').exec(function(err, game) {
               ChatMessage.find({game:game.id}).populate('user').exec(function(err,messages){
-              
+                User.find({isbot:true}).exec(function(err,bots){ 
           		if(game === undefined) return res.notFound();
                 if(req.isSocket) {
                     Game.subscribe(req, req.params.id);
-                 }else{
-                   renderTo(routes, res.view, '/game/'+req.param('id'), {},{game:game,messages:messages,user:req.user});
+                 }else{         
+                   renderTo(routes, res.view, '/game/'+req.param('id'), {},{game:game,messages:messages,loggedInAs:req.user,bots:bots});
                  }
                });
+                    });
       });
   		 
   },
+  
   join : function (req,res)
+  {
+    this.joinUser(req.user,req,res)
+  },
+  joinBot : function(req,res)
+  {
+    var self=this;
+    User.findOne({username:req.params.bot}).exec(function(err, bot) {
+      console.log(bot);
+     self.joinUser(bot,req,res)
+      });
+  },
+  joinUser: function(joinuser,req,res)
   {
     Game.findOne(req.params.id).exec(function afterwards(err,game){
       if(err){
@@ -24,9 +38,9 @@ module.exports = {
       if(!req.user){   
         return res.json({error:"Not logged in"});
       }
-      game[req.params.color]=req.user;
+      game[req.params.color]=joinuser;
       Game.publishUpdate(req.params.id, {
-        joinedUser:req.user,
+        joinedUser:joinuser,
         color:req.params.color,
         action: 'userJoined'
       });
@@ -105,7 +119,7 @@ module.exports = {
   },
   submitChatMessage: function(req,res)
   {
-    console.log(req.params.message);
+   
     Game.findOne(req.params.id).exec(function afterwards(err,game){
       if(err){
         return res.json(err);

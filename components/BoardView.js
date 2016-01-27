@@ -16,7 +16,11 @@ import BoardIntersection from './BoardIntersection';
             var color = n%2?"black":"white",
             height=800,width=800,
             chakraRadius=width/4;
+<<<<<<< Updated upstream
             circles.push( (<circle key={"circle"+n} fill="rgba(0,0,0,0)" stroke={color} strokeWidth="1" cx={0.5*(height / 2.0 + chakraRadius*Math.sin(2*Math.PI*n/12))} cy={0.5*(height / 2 + chakraRadius*Math.cos(2*Math.PI*n/12))} r="100"/>)); 
+=======
+            circles.push( (<circle fill="rgba(0,0,0,0)" key={"circle"+n}stroke={color} cx={0.5*(height / 2.0 + chakraRadius*Math.sin(2*Math.PI*n/12))} cy={0.5*(height / 2 + chakraRadius*Math.cos(2*Math.PI*n/12))} r="100"/>)); 
+>>>>>>> Stashed changes
         };
         for (var i=0; i<6; i++) 
              for (var j = 0; j < 12; j++)

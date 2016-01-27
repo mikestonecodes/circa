@@ -4,6 +4,7 @@ import Reflux from 'reflux';
 import BoardActions from '../shared/BoardActions';
 import {List} from 'immutable'
   const ChatView = React.createClass({
+    
     onKeyDown: function(event) {
       if (event.keyCode === 13) {
         console.log(event.target.value);

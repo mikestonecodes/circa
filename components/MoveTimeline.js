@@ -6,6 +6,7 @@ import {Seq,List} from 'immutable';
 import BoardActions from '../shared/BoardActions';
 const MoveTimeline = React.createClass({
   getInitialState: function(){return {toggleAllHistory: false};},
+
   filterMoves:function(color)
   {
     if(!this.props.board.history||this.props.board.history.count()<1)return '';
@@ -15,7 +16,10 @@ const MoveTimeline = React.createClass({
     var turnoffset=Seq([[2,2],[2,1],[1,1],[1,2]]).findIndex( e=> e.toString()===[firstmovecolor,currentcolor].toString())+1;    
     var paired=moves.toSeq().skip(turnoffset).filter(move => move.color==color).groupBy( (n,i) => Math.floor(i/2));
     if(moves.count()<5)return;
+<<<<<<< Updated upstream
     
+=======
+>>>>>>> Stashed changes
     return paired.map( function(pairedmoves,index){
       if(pairedmoves.count()==2){ 
         return (
@@ -111,7 +115,10 @@ const MoveTimeline = React.createClass({
   },
   showAll: function()
   {
+<<<<<<< Updated upstream
     
+=======
+>>>>>>> Stashed changes
     this.setState({toggleAllhistory: !this.state.toggleAllHistory});
   },
   joinBlackGame : function(color){
@@ -144,7 +151,7 @@ const MoveTimeline = React.createClass({
             <div className='bigpiece blackdisplay'> </div>
            <div className='previousmovesright'>{this.filterMoves(2)}</div>
         </div>
-        <button className='showall' onClick={this.showAll}>show All History</button>
+    
      </div>
     )
   }

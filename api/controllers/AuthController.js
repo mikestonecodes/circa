@@ -5,7 +5,7 @@
  * should look. It currently includes the minimum amount of functionality for
  * the basics of Passport.js to work.
  */
- var routes = require('../../components/routes.js');
+import routes from '../../components/routes' 
 
 var AuthController = {
   /**

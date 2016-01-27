@@ -45,3 +45,5 @@ nbproject
 # local config
 ########################
 config/local.js
+
+assets/js/bundle.js

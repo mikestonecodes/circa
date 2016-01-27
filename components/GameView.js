@@ -10,10 +10,11 @@ import ReactZeroClipboard from 'react-zeroclipboard';
 import { browserHistory } from 'react-router'
 import { Button } from 'react-bootstrap';
 import { Modal } from 'react-bootstrap';
+import Checkbox from 'react-checkbox'
     const GameView = React.createClass({
        mixins: [Reflux.connect(boardStore, 'boardstore')],
        
-        getInitialState: function(){return {boardstore:{},timer: 100,show:false};},
+        getInitialState: function(){return {boardstore:{},timer: 100,show:false,hastimer:true,ispublic:true,ranked:true};},
         componentWillMount: function () {
           // When this component is loaded, fetch initial data
           BoardActions.retrieveHistory(this.props.game,this.props.loggedInAs,this.props.messages);
@@ -39,7 +40,18 @@ import { Modal } from 'react-bootstrap';
       begin: function(){
           this.setState({ show: false})
           console.log("YO");
-         BoardActions.begin({timer:this.state.timer});
+          var timer=this.state.timer
+          if(!this.state.hastimer)timer=-1;
+         BoardActions.begin({timer:timer,ispublic:this.state.ispublic,ranked:this.state.ranked});
+      },
+      ChangehasTimer: function(value) {
+        this.setState({hastimer: value});
+      },
+      ChangeisPublic: function(value) {
+        this.setState({ispublic: value});
+      },
+        ChangeRanked: function(value) {
+        this.setState({ranked: value});
       },
       ChangeTimer: function(event) {
         this.setState({timer: event.target.value});
@@ -48,7 +60,7 @@ import { Modal } from 'react-bootstrap';
        
          var gameclass='starting';
          var timer = this.state.timer;
-         var starting=<input value={timer} onChange={this.ChangeTimer} name='timer' />
+        
          var show=true;
          var self=this;
          var modal=(<Modal
@@ -61,8 +73,10 @@ import { Modal } from 'react-bootstrap';
             <Modal.Title id="contained-modal-title"><h2>New Game</h2></Modal.Title>
           </Modal.Header>
           <Modal.Body>
-             {starting}
-             
+          Timer:<input value={timer} onChange={this.ChangeTimer} name='timer' /> <br/>
+          Has Timer: <Checkbox checked={this.state.hastimer} onChange={this.ChangehasTimer} /> <br/>
+          Public: <Checkbox checked={this.state.ispublic} onChange={this.ChangeisPublic} /> <br/>
+           Ranked: <Checkbox checked={this.state.ranked} onChange={this.ChangeRanked} /> <br/>
           </Modal.Body>
           <Modal.Footer>
           <ReactZeroClipboard 
@@ -74,7 +88,7 @@ import { Modal } from 'react-bootstrap';
           </Modal.Footer>
         </Modal>)
 
-
+      var starting;
          if(!this.props.loggedInAs||this.props.game.creator!=this.props.loggedInAs.id)
          {
             starting=<div>"game starting..."</div>

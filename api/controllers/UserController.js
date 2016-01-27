@@ -5,7 +5,7 @@ module.exports = {
   			return User.findOne({username:req.params.username}, function(err, user) {
        
    
-     Game.find().where({ or:[{black : user.id},{white:user.id }]}).limit(40).sort('createdAt DESC').populate('white').populate('black').exec(function(err, games) {
+     Game.find().where({ or:[{black : user.id},{white:user.id }]}).where({ispublic:true}).limit(40).sort('createdAt DESC').populate('white').populate('black').exec(function(err, games) {
       User.getWins(user.id,function(wins){
          User.getLosses(user.id,function(losses){
          Game.count({ or:[{black : user.id},{white:user.id }]}).exec(function(err,count) {

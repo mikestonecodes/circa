@@ -15,9 +15,14 @@ module.exports = {
       var self=this;
 
       Game.findOne(values.game).populate('moves').exec(function (err, game) {
+
               if (err) return cb(err);
-              if(game.state=='ending')return cb();
-         self.countdown=game.timer;
+              if (!game) return cb(new Error('Game not found.'));
+          if (!values.place||!values.color) return cb(new Error('data not found.'));
+              if(game.state=='ending'||game.state=='final')return cb();
+         if(game.timer>2)
+         {
+         self.countdown=game.timer; 
       clearInterval(self.timer);
 
        Game.publishUpdate(game.id,{  action: 'timer',timer:self.countdown});
@@ -62,9 +67,8 @@ module.exports = {
              Game.publishUpdate(game.id,{  action: 'timer',timer:self.countdown});
         }, 1000);
       
-  
-          if (!game) return cb(new Error('Game not found.'));
-          if (!values.place||!values.color) return cb(new Error('data not found.'));
+        }
+          
       
           if(values.from)game.history+="#";
             game.history+=values.place+(values.color==1?"!":"@");

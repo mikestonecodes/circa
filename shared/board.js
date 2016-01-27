@@ -41,7 +41,7 @@ import {List} from 'immutable'
     {         
         this.gameState='joining';
         var self=this;
-        io.socket.put('/game/'+this.gameid, { state: 'playing',timer:options.timer }, function (resData) {      
+        io.socket.put('/game/'+this.gameid, { state: 'playing' ,timer:options.timer,ispublic:options.ispublic,ranked:options.ranked }, function (resData) {      
                  self.triggerBoard();
         });  
     },
@@ -269,7 +269,8 @@ import {List} from 'immutable'
             console.log(snapshot.data);
             var self=this;
             this.gameState='ending';
-            this.fillTerritories(snapshot.data.Territories);
+            this.fillTerritories([snapshot.data.Territories[0],snapshot.data.Territories[1]]);
+          //   this.triggerBoard();
             //BoardActions.confirmTerritories();   
 
             //this.socket.post("/move",data);
@@ -278,6 +279,7 @@ import {List} from 'immutable'
         if(snapshot.verb=='updated'&&snapshot.data.action=='updateTerritories')
         {
              this.fillTerritories([snapshot.data.blackTerritories,snapshot.data.whiteTerritories]);
+              this.triggerBoard();
         }
 
         if(snapshot.verb=='updated'&&snapshot.data.action=='acceptScore')
@@ -312,7 +314,7 @@ import {List} from 'immutable'
         this.whitescore=this.whitecaptures;
         fillTerritories.forEach(function(terrorityGroup,color){
              console.log(terrorityGroup);
-               if(!terrorityGroup)return;
+               if(!terrorityGroup||terrorityGroup.length<1)return;
                 terrorityGroup.substring(1).split("!").forEach(function(locnotation){
                     var loc=self.notationToLocation(locnotation);
                     console.log(loc);

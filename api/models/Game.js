@@ -48,6 +48,15 @@ module.exports = {
       type:'string',
       defaultsTo:'starting'
     },
+  ranked:{
+    type:'boolean',
+    defaultsTo:true
+  },
+  ispublic:{
+    type:'boolean',
+    defaultsTo:true
+  },
+  
   timer:{
       type:'int',
        defaultsTo :100
@@ -72,7 +81,7 @@ module.exports = {
       Game.publishEndGame(game,cb)
      });
   },publishEndGame:function(game,cb){
-
+    if(game.state=='final')cb(new Error("Game done already"));
       game.state='ending'    
        board.set(game.history);
         var result=board.calculateWin();

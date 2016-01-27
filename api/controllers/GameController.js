@@ -4,14 +4,14 @@ module.exports = {
   show : function(req, res) {
   			 Game.findOne(req.params.id).populate('white').populate('black').exec(function(err, game) {
               ChatMessage.find({game:game.id}).populate('user').exec(function(err,messages){
-                User.find({isbot:true}).exec(function(err,bots){ 
+                
           		if(game === undefined) return res.notFound();
                 if(req.isSocket) {
                     Game.subscribe(req, req.params.id);
                  }else{         
-                   renderTo(routes, res.view, '/game/'+req.param('id'), {},{game:game,messages:messages,loggedInAs:req.user,bots:bots});
+                   renderTo(routes, res.view, '/game/'+req.param('id'), {},{game:game,messages:messages,loggedInAs:req.user});
                  }
-               });
+         
                     });
       });
   		 
@@ -21,14 +21,7 @@ module.exports = {
   {
     this.joinUser(req.user,req,res)
   },
-  joinBot : function(req,res)
-  {
-    var self=this;
-    User.findOne({username:req.params.bot}).exec(function(err, bot) {
-      console.log(bot);
-     self.joinUser(bot,req,res)
-      });
-  },
+
   joinUser: function(joinuser,req,res)
   {
     Game.findOne(req.params.id).exec(function afterwards(err,game){
@@ -50,7 +43,6 @@ module.exports = {
   },
   create : function(req,res,next)
   {
-    console.log("create");
     if(req.user){
     	Game.create({creator:req.user}, function(err, game) {
           if (err) return next(err);
@@ -104,6 +96,9 @@ module.exports = {
       if(game.blackAcceptScore==true&&game.whiteAcceptScore==true)
       {
         game.state='final';
+         if(game.blackScore>game.whiteScore)game.winner=game.black
+         if(game.blackScore<game.whiteScore)game.winner=game.white
+          if(game.blackScore==game.whiteScore||game.black==game.white)game.winner={};
       }
       Game.publishUpdate(req.params.id, {
         user:req.user,

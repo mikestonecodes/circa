@@ -192,6 +192,10 @@ nav
     padding-right: 20px;
     margin: 20px 0 0 5px;
 }
+#login div a
+{
+  padding-right: 10px;
+}
 input
 {
   color:black;
@@ -226,10 +230,28 @@ h1
 
   display: inline-block;
 }
-.griddle-next
+.usergames
+{
+      background: none !important;
+}
+.griddle-next 
 {
 
   display: inline-block;
+}
+.stats
+{
+  padding-left: 20px;
+}
+.wins
+{
+  margin-left:4px; 
+  color:rgb(58,188,0);
+}
+.losses
+{
+  margin-left:4px; 
+  color:rgb(149,10,4);
 }
 .griddle-page
 {
@@ -241,6 +263,7 @@ h1
 .griddle-footer
 {
   padding-top: 20px;
+  clear: both;
   text-align:center;
 }
 .board
@@ -336,7 +359,7 @@ h2
   width: 25%;
   margin-bottom: 2rem;
   height: 300px;
-    margin-bottom: 130px;
+    margin-bottom: 170px;
 }
 .white-lobby
 {

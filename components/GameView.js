@@ -92,7 +92,7 @@ import { Modal } from 'react-bootstrap';
                   {modal}
                     <div id='game' className={gameclass}>
                       <aside id='leftside'>
-                      <MoveTimeline user={this.props.user} board={this.state.boardstore} />
+                      <MoveTimeline loggedInAs={this.props.loggedInAs} board={this.state.boardstore} />
 
                      <ChatView board={this.state.boardstore} />
                       </aside>

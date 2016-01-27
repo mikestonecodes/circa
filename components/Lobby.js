@@ -5,6 +5,7 @@ import BoardIntersection from './BoardIntersection';
 import Griddle from 'griddle-react'
 import BoardActions from '../shared/BoardActions';
 import { browserHistory,Link } from 'react-router'
+import ReactDOM from 'react-dom'
 import {Transport} from '../shared/Transport'
 var OtherComponent = React.createClass({
   
@@ -49,7 +50,7 @@ var OtherComponent = React.createClass({
      getInitialState: function(){
       var initial = { "results": [],
           "currentPage": 0,
-          "maxPages": 0,
+          "maxPages": this.props.count,
           "externalResultsPerPage": 40,
           "externalSortColumn":null,
           "externalSortAscending":true
@@ -63,20 +64,25 @@ var OtherComponent = React.createClass({
 
     },
   getExternalData: function(page){
-        if(page==1){
+        if(page==1&&this.props.games){
           this.setState({
             results: this.props.games,
              currentPage: 0,
-            maxPages: 100
+            maxPages: this.props.count
          });
         }else{
           var self=this;
-          io.socket.get('/games/'+page, function (data) {
+          var url='/games/'+page
+          if(this.props.user)
+          {
+            url+="/user/"+this.props.user.id
+          }
+          io.socket.get( url,function (data) {
             console.log(data)
                  self.setState({
             results: data,
              currentPage: page-1,
-            maxPages: 100
+            maxPages: self.props.count
          });
             
            
@@ -85,6 +91,9 @@ var OtherComponent = React.createClass({
         }
     },
   setPage: function(index){
+       
+       window.scrollTo(0,0);
+        
       //This should interact with the data source to get the page at the given index
       index = index > this.state.maxPages ? this.state.maxPages : index < 1 ? 1 : index + 1;
       this.getExternalData(index);

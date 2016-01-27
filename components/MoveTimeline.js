@@ -39,7 +39,7 @@ const MoveTimeline = React.createClass({
   },
   renderCurrentMove: function(color)
   { 
-    
+   console.log(this.props.board.gameState);
     if(this.props.board.gameState=='final')
     {
       return <div className='acceptscore'></div>
@@ -47,17 +47,18 @@ const MoveTimeline = React.createClass({
     if(this.props.board.gameState=='ending')
     {
 
-      if(color==1&&this.props.blackAcceptScore||color==2&&this.props.whiteAcceptScore)
-      {
-         return <div className='acceptscore'>Score Accepted</div>
-      }
-      if(color==1&&this.props.user&&this.props.board.whiteUser&&this.props.board.whiteUser.username&&this.props.user.username==this.props.board.whiteUser.username)
+     
+      if(color==1&&this.props.loggedInAs&&this.props.board.whiteUser&&this.props.board.whiteUser.username&&this.props.loggedInAs.username==this.props.board.whiteUser.username)
       { 
         return <div className=' acceptbutton acceptscore' onClick={this.acceptScore}>Accept Score</div>
       }
-      if(color==2&&this.props.user&&this.props.board.blackUser&&this.props.board.blackUser.username&&this.props.user.username==this.props.board.blackUser.username)
+      if(color==2&&this.props.loggedInAs&&this.props.board.blackUser&&this.props.board.blackUser.username&&this.props.loggedInAs.username==this.props.board.blackUser.username)
       { 
         return <div className='acceptbutton acceptscore' onClick={this.acceptScore}>Accept Score</div>
+      }
+       if( (color==2&&this.props.board.blackAcceptScore)||(color==1&&this.props.board.whiteAcceptScore))
+      {
+         return <div className='acceptscore'>Score Accepted</div>
       }
       return <div className='acceptscore'>...</div>
     }

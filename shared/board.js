@@ -60,7 +60,7 @@ import {List} from 'immutable'
 	},
 	retrieveHistory:function(game,user,messages)
 	{
-        if(game.state=='starting'||game.state=='ending') this.gameState= game.state;
+        if(game.state=='starting'||game.state=='ending'||game.state=='final') this.gameState= game.state;
         this.gameid=game.id;
         this.currentUser=user;
         this.whiteUser=game.white || game.white;
@@ -595,7 +595,7 @@ import {List} from 'immutable'
         this.triggerBoard();
         console.log("black score is: " + blackScore);
         console.log("white score is: " + whiteScore);
-        return [blackTerritories.slice(0, - 1),whiteTerritories.slice(0, - 1)];
+        return [blackTerritories.slice(0, - 1),whiteTerritories.slice(0, - 1),blackScore,whiteScore];
 
        // alert("Black Score is: " + blackScore + '\n' + "White Score is: " + whiteScore);
         // bob's your uncle

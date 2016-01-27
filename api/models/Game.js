@@ -1,4 +1,4 @@
-var board = require('../../shared/board.js');
+import board from '../../shared/board';
 module.exports = {
   attributes: {
   	white:{
@@ -27,6 +27,19 @@ module.exports = {
       type:'string',
       defaultsTo : ''
     },
+    blackScore:
+    {
+       type:'int',
+       defaultsTo :0
+    },whiteScore:
+    {
+       type:'int',
+       defaultsTo :0
+    },
+    winner:{
+      model:'user',
+      defaultsTo : {}
+    },
     creator:{
       model:'user',
       defaultsTo : {}
@@ -50,7 +63,7 @@ module.exports = {
   captures:{
      type:'string',
        defaultsTo : ''
-  }
+  },
 
  },endGame:function(options,cb)
   {
@@ -63,9 +76,14 @@ module.exports = {
       game.state='ending'    
        board.set(game.history);
         var result=board.calculateWin();
-          console.log("YOOOO",result);
+          console.log("pendgame",result);
        game.blackTerritories=result[0];
-       game.whiteTerritories=result[1];         
+       game.whiteTerritories=result[1]; 
+       game.blackScore=result[2];
+       game.whiteScore=result[3];
+
+      
+
       Game.publishUpdate(game.id, {
         action: 'ending',
         Territories:result

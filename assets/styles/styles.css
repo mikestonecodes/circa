@@ -67,7 +67,47 @@ aside
   height: 100%;
 }
 
+ .CodeMirror {
+      line-height: 1.3em;
+      font-family: monospace;
 
+      /* Necessary so the scrollbar can be absolutely positioned within the wrapper on Lion. */
+      position: relative;
+      /* This prevents unwanted scrollbars from showing up on the body and wrapper in IE. */
+      overflow: hidden;
+      background-color: white;
+      width: 530px;
+
+      /* Copied from Bootstrap's textarea */
+      display: inline-block;
+      padding: 4px 6px;
+      margin-bottom: 9px;
+      color: #555555;
+      border: 1px solid #ccc;
+      -webkit-border-radius: 3px;
+      -moz-border-radius: 3px;
+      border-radius: 3px;
+      -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+      -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+      -webkit-transition: border linear 0.2s, box-shadow linear 0.2s;
+      -moz-transition: border linear 0.2s, box-shadow linear 0.2s;
+      -ms-transition: border linear 0.2s, box-shadow linear 0.2s;
+      -o-transition: border linear 0.2s, box-shadow linear 0.2s;
+      transition: border linear 0.2s, box-shadow linear 0.2s;  
+    }
+
+    .CodeMirror-focused {
+      /* Copied from Bootstrap's textarea */
+      border-color: rgba(82, 168, 236, 0.8);
+      outline: 0;
+      outline: thin dotted \9;
+      /* IE6-9 */
+
+      -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+         -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+              box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);  
+    }
 
 .example-enter {
   opacity: 0.01;
@@ -84,7 +124,10 @@ body
     color: white;
 
 }
-
+textarea
+{
+  color:black;
+}
 
 nav:before {
     box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
@@ -149,6 +192,10 @@ nav
     padding-right: 20px;
     margin: 20px 0 0 5px;
 }
+input
+{
+  color:black;
+}
 h1
 {
   font-size: 20px;
@@ -165,6 +212,36 @@ h1
 #main
 {
       padding-top: 56px;
+}
+.griddle-container
+{
+  border:none;
+}
+.lobby_board
+{
+  
+}
+.griddle-previous
+{
+
+  display: inline-block;
+}
+.griddle-next
+{
+
+  display: inline-block;
+}
+.griddle-page
+{
+        padding-top: 50px;
+      margin-right: 20px;
+    margin-left: 20px;
+ display: inline-block;
+}
+.griddle-footer
+{
+  padding-top: 20px;
+  text-align:center;
 }
 .board
 {
@@ -214,6 +291,65 @@ h2
   color:green;
   position: absolute;
 }
+.lobbyusername
+{
+     float: left;
+    display: inline-block;
+    margin-top: 17px;
+    margin-left: 10px;
+
+}
+.login input
+{
+  margin-bottom: 10px;
+  text-align: center;
+  width:300px;
+}
+.booyah-box {
+    text-align: center;
+    background: rgb(73,73,86);
+    border: none;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    padding: 20px;
+}
+.joinnow
+{
+  color:red !important;
+}
+.griddle-container
+{
+  padding:20px;
+}
+.name
+{
+  margin-left: 50px;
+  margin-top: 20px;
+
+}
+.nametag
+{
+    clear: both;
+}
+.custom-row-card {
+  float: left;
+  width: 25%;
+  margin-bottom: 2rem;
+  height: 300px;
+    margin-bottom: 130px;
+}
+.white-lobby
+{
+  float:left;
+  background-color: white;
+  display:inline-block !important;
+}
+.black-lobby
+{
+   float:left;
+  background-color: black;
+  display:inline-block  !important;
+}
 .popup
 {
 
@@ -231,6 +367,10 @@ h2
 .empty
 {
 	fill-opacity:0.5;
+}
+.emptyTerrority
+{
+  fill-opacity:0.5;
 }
 .empty:hover
 {

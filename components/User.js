@@ -3,11 +3,12 @@ import React from 'react';
 import Layout from './Layout';
     const userView = React.createClass({
       render: function() {
+
           return (
-            <Layout user={this.props.loggedInAs}>
+            <div>
                  <h1>{this.props.user.username} </h1>
                  <a href='/game/create'>New Game!! </a>
-           </Layout>
+           </div>
           )
       }
   });

@@ -20,12 +20,14 @@ import Validators from '../shared/Validators';
           //If the piece is placed make the radius bigger
           r = ( 200/16 );
           classes += this.props.color == 2 ? "black" : "white";
-        }else {
+        }else if(this.props.board.gameState!='ending') {
           //Otherwise if you can't place an item don't display intersection
           classes += (this.props.board.turn== 1 ?"white" : "black")+" empty";
           if(!Validators.placeable( this.props.board, {ring:this.props.ring,hour:this.props.hour} ))  {
             r=0;
           }   
+        }else {
+           classes += 'emptyTerrority';
         }
         if(this.props.color==3)
         {
@@ -43,7 +45,7 @@ import Validators from '../shared/Validators';
            this.props.board.sliding.hour==this.props.hour){
             r=( 200/8 ); 
         }
-    
+        
         var ringRadius = 200 * Math.sin(2*Math.PI*this.props.ring/24)/2;
         return (
             <circle 

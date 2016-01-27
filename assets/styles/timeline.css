@@ -11,6 +11,17 @@ button
   background-color: none;
 
 }
+.acceptbutton
+{
+  border: 1px;
+}
+.acceptscore
+{
+  height:20px;
+  padding:10px;
+  padding-top: 0px;
+  margin-bottom: 15px;
+}
 .showall{
   margin:0 auto;
     display:block;
@@ -74,7 +85,7 @@ button
   float: right; }
 
 .blackcol {
-  width: 109px;
+  width: 141px;
   float: right;
   padding-left: 15px;
   border-left: 1px solid gray;

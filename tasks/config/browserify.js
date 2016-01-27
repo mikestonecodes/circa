@@ -14,10 +14,12 @@ module.exports = function(grunt) {
 
   grunt.config.set('browserify', {
     options: {
-      
-      external: ['react', 'react-router','reflux','immutable'],
+     
+     
+      external:['react','react-dom'],
       transform: [
-        [require("babelify")]
+      ["exposify",   {"global": true, "expose": {"react": "React","react-dom": "ReactDOM"}}],
+        ["babelify",{presets: ["es2015", "react"]}]
       ],
       
       harmony: true

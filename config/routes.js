@@ -28,7 +28,7 @@ module.exports.routes = {
   //
   // (Alternatively, remove this and add an `index.html` file in your `assets` directory)
 
-  'get /login': 'AuthController.login',
+'get /login': 'AuthController.login',
 'get /logout': 'AuthController.logout',
 'get /register': 'AuthController.register',
  
@@ -39,13 +39,23 @@ module.exports.routes = {
 'get /auth/:provider/:action': 'AuthController.callback',
 'get /game/create': 'GameController.create',
 'get /game/:id': 'GameController.show',
+'get /games/:page': 'LobbyController.getGames',
 'get /user/:username': 'UserController.show',
+'get /bot/:username': 'BotController.show',
+'put /bot/:username' : 'BotController.update',
+
 'post /game/:id/join/:color': 'GameController.join',
+'get /game/:id/join/:color': 'GameController.show',
+'post /game/:id/joinbot/:bot/color/:color': 'GameController.joinBot',
 'post /game/:id/endGame': 'GameController.endGame',
 'post /game/:id/submitChatMessage/:message': 'GameController.submitChatMessage',
+'post /game/:id/updateTerritories/:blackTerritories/:whiteTerritories': 'GameController.updateTerritories',
+'post /game/:id/acceptScore': 'GameController.acceptScore',
   '/': {
     view: 'homepage'
   },
+  '/': 'LobbyController.show'
+
   // Custom routes here...
 
 

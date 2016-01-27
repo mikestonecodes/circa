@@ -29,6 +29,8 @@
     -->
     <link href='https://fonts.googleapis.com/css?family=Raleway:400,700,800' rel='stylesheet' type='text/css'>
     <!--STYLES-->
+    <link rel="stylesheet" href="/styles/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/styles/bootstrap.min.css">
     <link rel="stylesheet" href="/styles/importer.css">
     <link rel="stylesheet" href="/styles/styles.css">
     <link rel="stylesheet" href="/styles/timeline.css">
@@ -36,8 +38,8 @@
   </head>
 
   <body>
-    <div><%- body %></div>
-
+  
+    <div id='main_react'><%- body %></div>
 
 
     <!--
@@ -90,9 +92,12 @@
     -->
 
     <script type="text/javascript"><%- locals.state||'' %></script>
-    <!--SCRIPTS-->
+   
     <script src="/js/dependencies/sails.io.js"></script>
-    <script src="/js/dependencies/build.js"></script>
+
+    <script src="/js/react.js"></script>
+         <script src="/js/react-dom.min.js"></script>
     <script src="/js/bundle.js"></script>
-    <!--SCRIPTS END-->
+   
+   
   </body>

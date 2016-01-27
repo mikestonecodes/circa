@@ -1,4 +1,4 @@
-var routes = require('../../components/routes.js');
+import routes from '../../components/routes' 
 
 module.exports = {
   show : function(req, res) {
@@ -11,5 +11,9 @@ module.exports = {
                  }
       });
   		 
+  },
+  update : function(req,res) {
+
+    
   }
  }

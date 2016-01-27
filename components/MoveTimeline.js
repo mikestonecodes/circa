@@ -6,6 +6,7 @@ import {Seq,List} from 'immutable';
 import BoardActions from '../shared/BoardActions';
 const MoveTimeline = React.createClass({
   getInitialState: function(){return {toggleAllHistory: false};},
+
   filterMoves:function(color)
   {
     if(!this.props.board.history||this.props.board.history.count()<1)return '';
@@ -15,7 +16,6 @@ const MoveTimeline = React.createClass({
     var turnoffset=Seq([[2,2],[2,1],[1,1],[1,2]]).findIndex( e=> e.toString()===[firstmovecolor,currentcolor].toString())+1;    
     var paired=moves.toSeq().skip(turnoffset).filter(move => move.color==color).groupBy( (n,i) => Math.floor(i/2));
     if(moves.count()<5)return;
-    console.log(this.state.toggleAllhistory);
     return paired.map( function(pairedmoves,index){
       if(pairedmoves.count()==2){ 
         return (
@@ -33,8 +33,34 @@ const MoveTimeline = React.createClass({
       BoardActions.pass();
     }
   },
+  acceptScore: function(event)
+  {
+    BoardActions.acceptScore();
+  },
   renderCurrentMove: function(color)
   { 
+    
+    if(this.props.board.gameState=='final')
+    {
+      return <div className='acceptscore'></div>
+    }
+    if(this.props.board.gameState=='ending')
+    {
+
+      if(color==1&&this.props.blackAcceptScore||color==2&&this.props.whiteAcceptScore)
+      {
+         return <div className='acceptscore'>Score Accepted</div>
+      }
+      if(color==1&&this.props.user&&this.props.board.whiteUser&&this.props.board.whiteUser.username&&this.props.user.username==this.props.board.whiteUser.username)
+      { 
+        return <div className=' acceptbutton acceptscore' onClick={this.acceptScore}>Accept Score</div>
+      }
+      if(color==2&&this.props.user&&this.props.board.blackUser&&this.props.board.blackUser.username&&this.props.user.username==this.props.board.blackUser.username)
+      { 
+        return <div className='acceptbutton acceptscore' onClick={this.acceptScore}>Accept Score</div>
+      }
+      return <div className='acceptscore'>...</div>
+    }
     var moves=this.props.board.history;
     var place='';
     var tofrom='';
@@ -85,7 +111,7 @@ const MoveTimeline = React.createClass({
   },
   showAll: function()
   {
-    console.log("yo");
+
     this.setState({toggleAllhistory: !this.state.toggleAllHistory});
   },
   joinBlackGame : function(color){
@@ -101,6 +127,7 @@ const MoveTimeline = React.createClass({
     if(this.props.board.blackUser&&this.props.board.blackUser.username){
       black_user=this.props.board.blackUser.username;
     }
+
     return (
       <div id='timeline'>
         <div className='whitecol'> 
@@ -117,7 +144,7 @@ const MoveTimeline = React.createClass({
             <div className='bigpiece blackdisplay'> </div>
            <div className='previousmovesright'>{this.filterMoves(2)}</div>
         </div>
-        <button className='showall' onClick={this.showAll}>show All History</button>
+    
      </div>
     )
   }

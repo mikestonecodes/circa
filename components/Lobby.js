@@ -30,7 +30,9 @@ var OtherComponent = React.createClass({
       }
     
     return (<div className="custom-row-card">
+      <a href={'/game/'+this.props.data.id} >
       <img src='/images/board.svg' width={"100%"} height={"100%"} className='lobby_board' />
+      </a>
     <div className="name">
       <div className='nametag'>
         <div className=' white-lobby bigpiece'></div>

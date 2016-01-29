@@ -18,7 +18,7 @@ module.exports = {
 
               if (err) return cb(err);
               if (!game) return cb(new Error('Game not found.'));
-          if (!values.place||!values.color) return cb(new Error('data not found.'));
+          if (!values.place||!values.color) return cb(new Error('Move color or place not found.'));
               if(game.state=='ending'||game.state=='final')return cb();
          if(game.timer>2)
          {

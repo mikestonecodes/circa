@@ -7,7 +7,7 @@ import Login from './Login';
 import Lobby from './Lobby';
 import GameView from './GameView';
 import User from './User';
-import Bot from './Bot';
+import botApi from './botApi';
 import Register from './Register';
  export default (
  
@@ -19,7 +19,7 @@ import Register from './Register';
  	<Route path="lobby" component={Lobby} />
  	<IndexRoute component={Lobby} />
  	<Route path="user/:username" component={User} />
- 	<Route path="bot/:username" component={Bot} />
+ 	<Route path="botapi" component={botApi} />
  	<Route path="register" component={Register} />
  </Route>
 );

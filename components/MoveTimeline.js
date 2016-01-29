@@ -39,7 +39,6 @@ const MoveTimeline = React.createClass({
   },
   renderCurrentMove: function(color)
   { 
-   console.log(this.props.board.gameState);
     if(this.props.board.gameState=='final')
     {
       return <div className='acceptscore'></div>

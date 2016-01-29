@@ -32,7 +32,7 @@ module.exports.passport = {
       consumerSecret: 'your-consumer-secret'
     }
   },
-
+ 
   github: {
     name: 'GitHub',
     protocol: 'oauth2',

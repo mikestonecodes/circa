@@ -1,7 +1,7 @@
 import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { match, RouterContext } from 'react-router'
-import DataWrapper from '../../shared/datawrapper'
+import DataWrapper from '../../shared/DataWrapper'
 import _ from 'lodash';
 
 module.exports = function(routes, method, url, locals, state) {

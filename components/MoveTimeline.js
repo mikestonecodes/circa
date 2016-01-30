@@ -25,7 +25,7 @@ const MoveTimeline = React.createClass({
           </div>
         ); 
       }
-      }).toArray().slice(0,this.state.toggleAllhistory?9001:3);
+      }).toArray();
   },
   handleClick: function(event)
   {

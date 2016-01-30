@@ -3,9 +3,10 @@ import routes from '../../components/routes'
 module.exports = {
   show : function(req, res) {
   			 Game.findOne(req.params.id).populate('white').populate('black').exec(function(err, game) {
+            if(game === undefined) return res.notFound();
               ChatMessage.find({game:game.id}).populate('user').exec(function(err,messages){
                 
-          		if(game === undefined) return res.notFound();
+          	
                 if(req.isSocket) {
                     Game.subscribe(req, req.params.id);
                  }else{         

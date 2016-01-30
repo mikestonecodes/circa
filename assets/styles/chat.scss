@@ -9,12 +9,43 @@
 }
 .submitChatMessage
 {
+	    position: fixed;
+    bottom: 0;
+    right: 20px;
+    height: 40px;
+    width: 360px;
 
-   width:100%;
-   height: 100%;
-	border-radius: 5px;
-	border:none;
-    margin-bottom: 15px;
+}
+.topchatmin
+{
+	bottom: 0px !important;
+}
+.minclass
+{
+	display:none;
+}
+.closechat
+{
+	float:right;
+	padding-right:10px;
+	cursor:grab;
+}
+#topchat{
+	position: fixed;
+    bottom: 500px;
+    width: 360px;
+    vertical-align: middle;
+    /* line-height: 15px; */
+    padding-top: 8px;
+    padding-left: 10px;
+    height: 30px;
+    background-color: #1fa74f;
+        right: 20px;
+}
+#chatmessages
+{
+
+	 margin-bottom: 15px; 
 }
 .modal-content
 {
@@ -22,19 +53,20 @@
 }
 .chatmessage
 {
+    overflow-wrap: break-word;
 	    line-height: 1.3;
 }
 #chatbox
 {
- 
-		bottom:0;
-
-	
-	padding-bottom: 20px;
-		position: fixed;
-
-	width:25%;
-	background-color: #24242d;
+padding: 20px;
+    background-color: #494956;
+    overflow: auto;
+    right: 20px;
+    height: 500px;
+    bottom: 0;
+    padding-bottom: 20px;
+    position: fixed;
+    width: 360px;
 }
 .chatentry
 {

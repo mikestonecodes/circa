@@ -43,6 +43,7 @@ module.exports.routes = {
 'get /games/:page/user/:user': 'LobbyController.getGames',
 'get /user/:username': 'UserController.show',
 'get /botapi': 'botApiController.show',
+'post /move' : 'MoveController.create',
 'post /game/:id/join/:color': 'GameController.join',
 'get /game/:id/join/:color': 'GameController.show',
 'post /game/:id/endGame': 'GameController.endGame',

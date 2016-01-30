@@ -1,19 +1,47 @@
 'use strict';
 import React from 'react';
 import Reflux from 'reflux';
-import BoardActions from '../shared/BoardActions';
+import ChatStore from '../shared/ChatStore';
+import ChatActions from '../shared/ChatActions';
 import {List} from 'immutable'
   const ChatView = React.createClass({
-    
+     mixins: [Reflux.connect(ChatStore, 'chatstore')],
+    getInitialState: function(){
+      return { 
+          chatstore:{},
+          "minamized": true
+      }
+    },
     onKeyDown: function(event) {
       if (event.keyCode === 13) {
         console.log(event.target.value);
-        BoardActions.submitChatMessage(event.target.value.toString());
+        ChatActions.submitChatMessage(event.target.value.toString());
+        event.target.value="";
       }
     },
+    ChatBarClick:function(event)
+    {
+        ChatActions.clearUnread();
+      this.setState({minamized:!this.state.minamized});
+    
+    },
     render: function() {
+      var newchats='';
+      if(this.state.chatstore.unread!=0)
+      {
+        newchats=<span className='closechat'>{this.state.chatstore.unread}</span>
+      }  
 
-          var messages=this.props.board.messages?this.props.board.messages.map(msg => {
+          var minclass='minclass'
+             var topchatmin='topchatmin'
+             var topclose=<span className='closechat'>{newchats}</span>
+          if(this.state.minamized==false){
+            minclass=''
+            topchatmin=''
+            topclose=<span className='closechat'>x</span>
+          }
+
+          var messages=this.state.chatstore.messages?this.state.chatstore.messages.map(msg => {
             var chaticonclass='chatusericon';
             if(this.props.board.whiteUser.id==msg.user.id)chaticonclass+=' white';
             if(this.props.board.blackUser.id==msg.user.id)chaticonclass+=' black';
@@ -34,8 +62,13 @@ import {List} from 'immutable'
             </div>
           }).reverse():[] ;
            return <div id='chat'>
-           {messages}
-           <div id='chatbox'>
+         <div id='topchat' onClick={this.ChatBarClick} className={topchatmin}>Chat {topclose} </div>
+           <div id='chatbox' className={minclass}>
+            <div id='chatmessages' >
+             
+             {messages}
+             </div>
+        
            <input
               className="submitChatMessage"
               id={this.props.id}

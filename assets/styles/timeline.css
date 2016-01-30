@@ -71,7 +71,7 @@ button
   position: fixed;
   padding: 20px;
   bottom:0;
-  right: 0;
+  left: 0;
   font-size: 30px;
 }
 .leftmove:after {

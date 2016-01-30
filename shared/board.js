@@ -22,7 +22,6 @@ import {List} from 'immutable'
 	    this.sliding= undefined;
         this.currentUser={};
 	    this.history=List();	
-        this.messages=List();
 	    this.gameid=-1;
     	this.onChanges = [];
         this.whiteSocket='';
@@ -67,7 +66,7 @@ import {List} from 'immutable'
         this.blackUser=game.black || game.black;
     	this.socket.get('/game/'+this.gameid);	
        
-        this.messages=List(messages);
+       
      	this.set(game.history);
 
         if(game.state=='ending'||game.state=='final')
@@ -207,6 +206,7 @@ import {List} from 'immutable'
 
 	{
         if(this.gameState=='starting'||this.gameState=='ending'||this.gameState=='final')return;
+        if(!this.whiteUser||!this.blackUser)return;
         var lastmove=this.history.get(0) || this.history.count()>0;
         var nextcolor=2;
         if(lastmove){
@@ -240,25 +240,22 @@ import {List} from 'immutable'
     },
 
     
-    submitChatMessage:function(msg)
-    {
-        this.socket.post('/game/'+this.gameid+"/submitChatMessage/"+msg)
-    },
+    
 	update: function(snapshot)
 	{
         
+
+       if(snapshot.verb=='updated'&&snapshot.data.action=='moveError')
+        {
+            console.log("Error with move",snapshot.data);
+            return; 
+        }
+         
        if(snapshot.verb=='addedTo'&&snapshot.attribute=='moves') {
           BoardActions.retrieveMove();
         }
-         if(snapshot.verb=='updated'&&snapshot.data.action=='chatMessageSubmited'){
-           this.messages=this.messages.push(snapshot.data);
-           this.triggerBoard();      
-        }
-        if(snapshot.verb=='updated'&&snapshot.data.action=='timer'){
-           this.timer=snapshot.data.timer;
-           
-           this.triggerBoard();      
-        }
+       
+     
         if(snapshot.verb=='updated'&&snapshot.data.action=='userJoined'){
            this[ snapshot.data.color+'User']=snapshot.data.joinedUser;
            this.triggerBoard();      
@@ -345,9 +342,7 @@ import {List} from 'immutable'
             blackUser:this.blackUser,
             blackAcceptScore:this.blackAcceptScore,
             whiteAcceptScore:this.whiteAcceptScore,
-            whiteUser:this.whiteUser,
-            messages:this.messages,
-            timer:this.timer
+            whiteUser:this.whiteUser
     	});
 	},
 	//place or move stone 

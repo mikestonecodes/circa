@@ -2,6 +2,9 @@ import Reflux from 'reflux';
 import React from 'react';
 import boardStore from '../shared/board';
 import BoardActions from '../shared/BoardActions';
+import ChatActions from '../shared/ChatActions'
+import TimerActions from '../shared/TimerActions'
+import TimerView from './TimerView'
 import BoardView from './BoardView';
 import Layout from './Layout';
 import MoveTimeline from './MoveTimeline';
@@ -17,8 +20,9 @@ import Checkbox from 'react-checkbox'
         getInitialState: function(){return {boardstore:{},timer: 100,show:false,hastimer:true,ispublic:true,ranked:true};},
         componentWillMount: function () {
           // When this component is loaded, fetch initial data
-          BoardActions.retrieveHistory(this.props.game,this.props.loggedInAs,this.props.messages);
-
+          BoardActions.retrieveHistory(this.props.game,this.props.loggedInAs);
+          ChatActions.retrieveHistory(this.props.game,this.props.messages);
+          TimerActions.retrieveHistory(this.props.game);
           if(this.state.boardstore&&this.props.loggedInAs){
             if(this.state.boardstore.blackUser==undefined||tthis.state.boardstore.blackUser.username==undefined){
               if(this.props.params.joincolor=='black'){
@@ -105,13 +109,14 @@ import Checkbox from 'react-checkbox'
             <div>
                   {modal}
                     <div id='game' className={gameclass}>
+                     <BoardView  board={this.state.boardstore} />
                       <aside id='leftside'>
                       <MoveTimeline loggedInAs={this.props.loggedInAs} board={this.state.boardstore} />
 
-                     <ChatView board={this.state.boardstore} />
+                    
                       </aside>
-                     <BoardView  board={this.state.boardstore} />
-                     <div id='timer'>{this.state.boardstore.timer}</div>
+                       <ChatView board={this.state.boardstore} />
+                     <TimerView />
                     </div>
           </div>
           

@@ -9,9 +9,6 @@ import ReactDOM from 'react-dom'
 import {Transport} from '../shared/Transport'
 var OtherComponent = React.createClass({
   
-  getDefaultProps: function(){
-    return { "data": {} };
-  },
   
   render: function(){
     var white=<div></div>
@@ -48,6 +45,8 @@ var OtherComponent = React.createClass({
     </div>);
   }
 });
+OtherComponent.defaultProps={"data": {} }
+
   const LobbyView = React.createClass({
      getInitialState: function(){
       var initial = { "results": [],
@@ -67,11 +66,14 @@ var OtherComponent = React.createClass({
     },
   getExternalData: function(page){
         if(page==1&&this.props.games){
+
           this.setState({
             results: this.props.games,
              currentPage: 0,
             maxPages: this.props.count
          });
+
+      
         }else{
           var self=this;
           var url='/games/'+page
@@ -103,6 +105,7 @@ var OtherComponent = React.createClass({
     setPageSize: function(size){
     },
     render: function() {
+      
       var games=this.props.games.map( (game,index) => {
           return (<div key={index}>1</div> );
       });
@@ -113,7 +116,7 @@ var OtherComponent = React.createClass({
         externalSetPageSize={this.setPageSize} externalMaxPage={this.state.maxPages}
         externalChangeSort={function(){}} externalSetFilter={function(){}}
         externalCurrentPage={this.state.currentPage} results={this.state.results}  resultsPerPage={this.state.externalResultsPerPage}
-        externalSortColumn={this.state.externalSortColumn}  externalSortAscending={this.state.externalSortAscending} />
+        externalSortColumn={this.state.externalSortColumn} useCustomPagerComponent={(this.props.count==0)}  externalSortAscending={this.state.externalSortAscending} />
       );
      }
 });

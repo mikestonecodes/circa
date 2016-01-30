@@ -1,15 +1,99 @@
-
+import validators from '../../shared/Validators';
 module.exports = {
 
   attributes: {
     place: 'string',
-    color: 'string',
+    color: 'int',
     from: 'string',
     expired:'boolean',
     game:{
       model:'Game'
     }  
   },
+   beforeCreate: function (values, cb) {
+     Game.findOne(values.game).populate('moves').exec(function (err, game) {
+              if (err) return cb(err);
+             
+              if (!values.place||!values.color) return cb(new Error('Move color or place not found.'));
+              if (!values.gamestate) return cb(new Error('No gamestate found'));
+             // if(values.place!="pass" && values.place.length!=2 ) return cb(new Error('place error'));
+              //if(values.from&& (values.from!="pass" && values.from.length!=2)) return cb(new Error('from location error'));
+              
+              if(   !(game.black&&game.white)) return cb(new Error('Both players must join'));
+              if(game.state=='ending'||game.state=='final')return cb(new Error('Game ending or not playable.'));
+              if(game.state=='starting')return cb(new Error('Game has not started'));
+
+              var color=parseInt(values.color);
+          //    console.log("COLOR",color);
+              if(color!=1&&color!=2) return cb(new Error('Color Value incorrect'));
+              var lastmove=game.moves.reverse()[0]; // NOT immutable
+              
+              if(!lastmove){
+                if(color!=2)return cb(new Error('First piece must be black'));
+
+              }
+
+              var getColorAtIntersection=function(loc){
+
+                for (var i = 0; i < game.moves.length; i++) {  
+                  if(game.moves[i].place==loc)return game.moves[i].color
+                  if(game.moves[i].from==loc)return 0;
+                }
+                return 0;
+              }
+              var notationToLocation = function(notation)
+              {
+               return { ring: notation.charCodeAt(0)-64  , hour: parseInt(notation.substring(1)) }   
+              }
+
+              if(getColorAtIntersection(values.place) != 0 )
+              {
+              if(values.place!='pass'){
+                  return cb(new Error('Spot full'));
+              }
+              }
+              if(lastmove&&parseInt(lastmove.color)==color){
+
+                var twomovesbehind=game.moves[1];
+                if(!values.from)return cb(new Error('from value needed for sliding move ( even if passing )'));
+                  if(twomovesbehind&&parseInt(twomovesbehind.color)==color){
+                  return cb(new Error('It is not your turn'));
+                }
+             
+
+                if(getColorAtIntersection(values.from) != color )
+                 {
+                  if(values.place!='pass'){
+                    return cb(new Error('You have to slide a piece of your color already on the board'));
+                  }
+                }
+                  //notationToLocation
+                  if(!validators.slidable( notationToLocation(values.from),notationToLocation(values.place)))   {
+                     if(values.place!='pass'){
+                     return cb(new Error('You Did not slide on a intersecting ring'));
+                   }
+                  }
+
+
+
+              
+               
+              }else{
+
+                 if(values.from)return cb(new Error('Do not use from value without slide move'));
+                 
+                if(twomovesbehind&&parseInt(twomovesbehind.color)!=color){
+                  return cb(new Error('It is not your turn'));
+                }
+               
+              }
+
+
+
+               cb();
+    });
+  },
+
   afterCreate: function (values, cb) {
      
       var self=this;
@@ -48,10 +132,11 @@ module.exports = {
                 }
             } 
               var gamestate=lastmove.gamestate=='sliding'?'place':'sliding';
-              var from=null;
-              if(gamestate=='sliding')from='pass';
-             
-              game.moves.add({game:game.id,place:'pass',from:from,gamestate:gamestate,color:color,expired:true});
+      
+             var data={game:game.id,place:'pass',gamestate:gamestate,color:color,expired:true}
+             if(gamestate=='sliding')data.from='pass';
+
+              game.moves.add(data);
               var allpasses=game.moves.reverse().slice(0, 3).every(function(move){
                 return move.place=='pass';
               });

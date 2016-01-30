@@ -2,12 +2,10 @@ import board from '../../shared/board';
 module.exports = {
   attributes: {
   	white:{
-    	model:'user',
-         defaultsTo : {}
+    	model:'user'
     },
   	black:{
-    	model:'user',
-         defaultsTo : {}
+    	model:'user'
     }, 
     history: {
       type:'string',
@@ -37,8 +35,7 @@ module.exports = {
        defaultsTo :0
     },
     winner:{
-      model:'user',
-      defaultsTo : {}
+      model:'user'
     },
     creator:{
       model:'user',

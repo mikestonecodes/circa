@@ -1,4 +1,5 @@
 import validators from '../../shared/Validators';
+import board from '../../shared/board';
 module.exports = {
 
   attributes: {
@@ -32,19 +33,24 @@ module.exports = {
                 if(color!=2)return cb(new Error('First piece must be black'));
 
               }
+             
 
+               if(game.advancedValidations){
+
+              board.set(game.history); 
               var getColorAtIntersection=function(loc){
-
-                for (var i = 0; i < game.moves.length; i++) {  
-                  if(game.moves[i].place==loc)return game.moves[i].color
-                  if(game.moves[i].from==loc)return 0;
-                }
-                return 0;
+                if(loc=='pass')return 0;
+                var mloc=notationToLocation(loc);
+                return(board.board[mloc.ring-1][mloc.hour-1])
               }
+
               var notationToLocation = function(notation)
               {
                return { ring: notation.charCodeAt(0)-64  , hour: parseInt(notation.substring(1)) }   
               }
+
+
+
 
               if(getColorAtIntersection(values.place) != 0 )
               {
@@ -87,7 +93,7 @@ module.exports = {
                 }
                
               }
-
+            }
 
 
                cb();

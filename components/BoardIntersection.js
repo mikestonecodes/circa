@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Reflux from 'reflux';
+
 import BoardActions from '../shared/BoardActions';
 import Validators from '../shared/Validators';
 
@@ -10,6 +11,7 @@ import Validators from '../shared/Validators';
 
       handleClick: function() {
         BoardActions.placeStone({ring:this.props.ring,hour:this.props.hour});
+     
       },
       
       render: function() {
@@ -47,10 +49,15 @@ import Validators from '../shared/Validators';
         }
         
         var ringRadius = 200 * Math.sin(2*Math.PI*this.props.ring/24)/2;
+        
+        var offsethour =this.props.hour;  
+        if(this.props.ring!=1)offsethour-=Math.floor(this.props.ring/2)-1;
+        if(this.props.ring==3)offsethour--;
+
         return (
             <circle 
-                cx={ 200 + 2*ringRadius*Math.cos(2*Math.PI*(((this.props.hour+8)%12)+this.props.ring/2)/12) }
-                cy={ 200 + 2*ringRadius*Math.sin(2*Math.PI*(((this.props.hour+8)%12)+this.props.ring/2)/12) }
+                cx={ 200 + 2*ringRadius*Math.cos(2*Math.PI*(((this.props.hour+6)%12)+this.props.ring/2)/12) }
+                cy={ 200 + 2*ringRadius*Math.sin(2*Math.PI*(((this.props.hour+6)%12)+this.props.ring/2)/12) }
                 r={r}
                 id={this.props.ring + " "  +this.props.hour }
                 onClick={this.handleClick}

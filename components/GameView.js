@@ -17,7 +17,7 @@ import Checkbox from 'react-checkbox'
     const GameView = React.createClass({
        mixins: [Reflux.connect(boardStore, 'boardstore')],
        
-        getInitialState: function(){return {boardstore:{},timer: 100,show:false,hastimer:true,ispublic:true,ranked:true};},
+        getInitialState: function(){return {boardstore:{},timer: 100,show:false,hastimer:true,ispublic:true,ranked:true,advancedValidations:false};},
         componentWillMount: function () {
           // When this component is loaded, fetch initial data
           BoardActions.retrieveHistory(this.props.game,this.props.loggedInAs);
@@ -46,7 +46,7 @@ import Checkbox from 'react-checkbox'
           console.log("YO");
           var timer=this.state.timer
           if(!this.state.hastimer)timer=-1;
-         BoardActions.begin({timer:timer,ispublic:this.state.ispublic,ranked:this.state.ranked});
+         BoardActions.begin({timer:timer,ispublic:this.state.ispublic,ranked:this.state.ranked,advancedValidations:this.state.advancedValidations});
       },
       ChangehasTimer: function(value) {
         this.setState({hastimer: value});
@@ -56,6 +56,9 @@ import Checkbox from 'react-checkbox'
       },
         ChangeRanked: function(value) {
         this.setState({ranked: value});
+      },
+       ChangeAdvancedValidations: function(value) {
+        this.setState({advancedValidations: value});
       },
       ChangeTimer: function(event) {
         this.setState({timer: event.target.value});
@@ -81,6 +84,8 @@ import Checkbox from 'react-checkbox'
           Has Timer: <Checkbox checked={this.state.hastimer} onChange={this.ChangehasTimer} /> <br/>
           Public: <Checkbox checked={this.state.ispublic} onChange={this.ChangeisPublic} /> <br/>
            Ranked: <Checkbox checked={this.state.ranked} onChange={this.ChangeRanked} /> <br/>
+           Advanced Validations: <Checkbox checked={this.state.advancedValidations} onChange={this.ChangeAdvancedValidations} /> <br/>
+
           </Modal.Body>
           <Modal.Footer>
           <ReactZeroClipboard 

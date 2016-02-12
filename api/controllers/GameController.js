@@ -44,12 +44,24 @@ module.exports = {
   },
   create : function(req,res,next)
   {
+   
+
     if(req.user){
-    	Game.create({creator:req.user}, function(err, game) {
-          if (err) return next(err);
-          res.redirect("/game/"+game.id);
-          
-      });
+      var options={creator:req.user}
+       if(req.isSocket) {
+          options={creator:req.user,advancedValidations:true,state: 'playing' ,ranked:false,ispublic:false,black:req.user,timer:req.params.timer,hastimer:(req.params.timer==-1)}
+    }
+
+  	Game.create(options, function(err, game) {
+      if(req.isSocket) {
+        Game.subscribe(req, game.id);
+        return res.json(game);
+      }  
+      if (err) return next(err);
+      res.redirect("/game/"+game.id);
+    });
+
+
   }else{
     res.redirect("/login");
   }
@@ -60,6 +72,7 @@ module.exports = {
   },
   updateTerritories: function(req,res)
   {
+
     console.log('updatet');
     Game.findOne(req.params.id).exec(function afterwards(err,game){
       if(err){

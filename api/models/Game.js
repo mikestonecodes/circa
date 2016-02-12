@@ -53,7 +53,10 @@ module.exports = {
     type:'boolean',
     defaultsTo:true
   },
-  
+  advancedValidations:{
+    type:'boolean',
+    defaultsTo:false
+  },
   timer:{
       type:'int',
        defaultsTo :100
@@ -81,8 +84,9 @@ module.exports = {
     if(game.state=='final')cb(new Error("Game done already"));
       game.state='ending'    
        board.set(game.history);
-        var result=board.calculateWin();
-          console.log("pendgame",result);
+      
+      var result=board.calculateWin();
+      console.log("pendgame",result);
        game.blackTerritories=result[0];
        game.whiteTerritories=result[1]; 
        game.blackScore=result[2];

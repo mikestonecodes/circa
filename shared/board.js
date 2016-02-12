@@ -38,9 +38,10 @@ import {List} from 'immutable'
     
     begin:function(options)
     {         
+        console.log(options)
         this.gameState='joining';
         var self=this;
-        io.socket.put('/game/'+this.gameid, { state: 'playing' ,timer:options.timer,ispublic:options.ispublic,ranked:options.ranked }, function (resData) {      
+        io.socket.put('/game/'+this.gameid, { state: 'playing' ,timer:options.timer,ispublic:options.ispublic,ranked:options.ranked,advancedValidations:options.advancedValidations }, function (resData) {      
                  self.triggerBoard();
         });  
     },
@@ -347,8 +348,6 @@ import {List} from 'immutable'
 	},
 	//place or move stone 
 	play:  function(to) {
-
-        console.log(this.gameState);
         if(this.gameState=='ending'&&this.board[to.ring-1][to.hour-1] !=1&&this.board[to.ring-1][to.hour-1] !=2)
         {
             if(this.board[to.ring-1][to.hour-1]==0)
